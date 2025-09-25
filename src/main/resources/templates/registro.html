@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registro de Paciente</title>
+</head>
+<body>
+<h2>Registro de Paciente</h2>
+
+<form th:action="@{/auth/registro}" th:object="${usuario}" method="post">
+    <!-- Datos de Usuario -->
+    <label>Nombre:</label>
+    <input type="text" th:field="*{nombre}" required /><br/>
+
+    <label>Apellido:</label>
+    <input type="text" th:field="*{apellido}" required /><br/>
+
+    <label>DNI:</label>
+    <input type="text" th:field="*{dni}" required /><br/>
+
+    <label>Correo:</label>
+    <input type="email" th:field="*{correo}" required /><br/>
+
+    <label>Dirección:</label>
+    <input type="text" th:field="*{direccion}" /><br/>
+
+    <label>Teléfono:</label>
+    <input type="text" th:field="*{telefono}" /><br/>
+
+    <label>Contraseña:</label>
+    <input type="password" th:field="*{password}" required /><br/>
+
+    <!-- Datos de Paciente -->
+    <h3>Datos de Paciente</h3>
+    <label>Fecha de nacimiento:</label>
+    <input type="date" name="fechaNacimiento" required /><br/>
+
+    <label>Historial clínico:</label>
+    <textarea name="historialClinico"></textarea><br/>
+
+    <button type="submit">Registrar</button>
+</form>
+
+</body>
+</html>
+
