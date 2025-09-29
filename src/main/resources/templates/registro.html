@@ -1,45 +1,71 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Paciente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<h2>Registro de Paciente</h2>
+<body class="bg-blue-50 min-h-screen flex items-center justify-center">
 
-<form th:action="@{/auth/registro}" th:object="${usuario}" method="post">
-    <!-- Datos de Usuario -->
-    <label>Nombre:</label>
-    <input type="text" th:field="*{nombre}" required /><br/>
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Registro de Paciente</h2>
 
-    <label>Apellido:</label>
-    <input type="text" th:field="*{apellido}" required /><br/>
+        <form th:action="@{/auth/registro}" th:object="${usuario}" method="post" class="space-y-4">
 
-    <label>DNI:</label>
-    <input type="text" th:field="*{dni}" required /><br/>
+            <!-- Datos de Usuario -->
+            <input type="text" th:field="*{nombre}" placeholder="Nombre" required
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" th:field="*{apellido}" placeholder="Apellido" required
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" th:field="*{dni}" placeholder="DNI" required
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="email" th:field="*{correo}" placeholder="Correo" required
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" th:field="*{direccion}" placeholder="Dirección"
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="text" th:field="*{telefono}" placeholder="Teléfono"
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
 
-    <label>Correo:</label>
-    <input type="email" th:field="*{correo}" required /><br/>
+            <!-- Contraseña con ojo -->
+            <div class="relative w-full">
+                <input type="password" id="password" th:field="*{password}" placeholder="Contraseña" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10">
+                <button type="button" id="togglePassword"
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                    👁️
+                </button>
+            </div>
 
-    <label>Dirección:</label>
-    <input type="text" th:field="*{direccion}" /><br/>
+            <!-- Datos de Paciente -->
+            <input type="date" name="fechaNacimiento" placeholder="Fecha de nacimiento" required
+                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <textarea name="historialClinico" placeholder="Historial clínico"
+                      class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
 
-    <label>Teléfono:</label>
-    <input type="text" th:field="*{telefono}" /><br/>
+            <button type="submit"
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded transition">
+                Registrar
+            </button>
+        </form>
 
-    <label>Contraseña:</label>
-    <input type="password" th:field="*{password}" required /><br/>
+        <p class="mt-4 text-gray-600 text-sm text-center">
+            ¿Ya tienes cuenta? 
+            <a th:href="@{/auth/login}" class="text-blue-500 hover:underline">Inicia sesión</a>
+        </p>
+    </div>
 
-    <!-- Datos de Paciente -->
-    <h3>Datos de Paciente</h3>
-    <label>Fecha de nacimiento:</label>
-    <input type="date" name="fechaNacimiento" required /><br/>
+    <!-- Script para mostrar/ocultar contraseña -->
+    <script>
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
 
-    <label>Historial clínico:</label>
-    <textarea name="historialClinico"></textarea><br/>
-
-    <button type="submit">Registrar</button>
-</form>
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
 
 </body>
 </html>
-

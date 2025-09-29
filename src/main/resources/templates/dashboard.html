@@ -1,11 +1,128 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <h2>Bienvenido al Dashboard</h2>
-    <p>Has iniciado sesión correctamente ✅</p>
-    <a th:href="@{/auth/login}">Cerrar sesión</a>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Encabezado -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Panel de Control</h1>
+            <a th:href="@{/auth/login}" 
+               class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold transition">
+               Cerrar sesión
+            </a>
+        </header>
+
+        <!-- Bienvenida -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Bienvenido al Dashboard</h2>
+            <p class="text-gray-600">Has iniciado sesión correctamente ✅</p>
+        </div>
+
+        <!-- Tarjetas de información -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Citas próximas</h3>
+                <p class="text-2xl font-bold text-blue-500">5</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Pacientes registrados</h3>
+                <p class="text-2xl font-bold text-green-500">120</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Próximos tratamientos</h3>
+                <p class="text-2xl font-bold text-yellow-500">3</p>
+            </div>
+        </div>
+
+        <!-- Botones de acción rápida -->
+        <div class="flex gap-4 mb-8">
+            <a href="#"
+               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold transition">
+               Nueva Cita
+            </a>
+            <a href="#"
+               class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold transition">
+               Nuevo Paciente
+            </a>
+        </div>
+
+        <!-- Tabla de citas recientes -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Citas recientes</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-700">
+                            <th class="px-4 py-2 border">Paciente</th>
+                            <th class="px-4 py-2 border">Tratamiento</th>
+                            <th class="px-4 py-2 border">Fecha</th>
+                            <th class="px-4 py-2 border">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-gray-600">
+                            <td class="px-4 py-2 border">Juan Pérez</td>
+                            <td class="px-4 py-2 border">Limpieza dental</td>
+                            <td class="px-4 py-2 border">28/09/2025</td>
+                            <td class="px-4 py-2 border text-green-500 font-semibold">Completada</td>
+                        </tr>
+                        <tr class="text-gray-600">
+                            <td class="px-4 py-2 border">María López</td>
+                            <td class="px-4 py-2 border">Ortodoncia</td>
+                            <td class="px-4 py-2 border">29/09/2025</td>
+                            <td class="px-4 py-2 border text-yellow-500 font-semibold">Pendiente</td>
+                        </tr>
+                        <tr class="text-gray-600">
+                            <td class="px-4 py-2 border">Carlos Ruiz</td>
+                            <td class="px-4 py-2 border">Endodoncia</td>
+                            <td class="px-4 py-2 border">30/09/2025</td>
+                            <td class="px-4 py-2 border text-red-500 font-semibold">Cancelada</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Gráfico de citas por semana -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Citas por semana</h3>
+            <canvas id="citasChart" class="w-full h-64"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        const ctx = document.getElementById('citasChart').getContext('2d');
+        const citasChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+                datasets: [{
+                    label: 'Citas',
+                    data: [5, 8, 6, 4, 7],
+                    backgroundColor: '#3B82F6' // azul tailwind
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Citas por día de la semana' }
+                }
+            }
+        });
+    </script>
+
 </body>
 </html>
