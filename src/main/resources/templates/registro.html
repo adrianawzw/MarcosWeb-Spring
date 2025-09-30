@@ -8,23 +8,33 @@
 </head>
 <body class="bg-blue-50 min-h-screen flex items-center justify-center">
 
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Registro de Paciente</h2>
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Registro de Paciente</h2>
 
-        <form th:action="@{/auth/registro}" th:object="${usuario}" method="post" class="space-y-4">
+        <form th:action="@{/auth/registro}" th:object="${usuario}" method="post" class="space-y-3">
 
-            <!-- Datos de Usuario -->
-            <input type="text" th:field="*{nombre}" placeholder="Nombre" required
-                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="text" th:field="*{apellido}" placeholder="Apellido" required
-                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="text" th:field="*{dni}" placeholder="DNI" required
-                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <!-- Nombre y Apellido -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" th:field="*{nombre}" placeholder="Nombre" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" th:field="*{apellido}" placeholder="Apellido" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+
+            <!-- DNI y Teléfono -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" th:field="*{dni}" placeholder="DNI" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" th:field="*{telefono}" placeholder="Teléfono"
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+
+            <!-- Correo -->
             <input type="email" th:field="*{correo}" placeholder="Correo" required
                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+            <!-- Dirección -->
             <input type="text" th:field="*{direccion}" placeholder="Dirección"
-                   class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <input type="text" th:field="*{telefono}" placeholder="Teléfono"
                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
 
             <!-- Contraseña con ojo -->
@@ -37,19 +47,23 @@
                 </button>
             </div>
 
-            <!-- Datos de Paciente -->
-            <input type="date" name="fechaNacimiento" placeholder="Fecha de nacimiento" required
+            <!-- Fecha de nacimiento -->
+            <label for="fechaNacimiento" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+            <input type="date" id="fechaNacimiento" name="fechaNacimiento" required
                    class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+            <!-- Historial clínico -->
             <textarea name="historialClinico" placeholder="Historial clínico"
                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
 
+            <!-- Botón -->
             <button type="submit"
                     class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded transition">
                 Registrar
             </button>
         </form>
 
-        <p class="mt-4 text-gray-600 text-sm text-center">
+        <p class="mt-3 text-gray-600 text-sm text-center">
             ¿Ya tienes cuenta? 
             <a th:href="@{/auth/login}" class="text-blue-500 hover:underline">Inicia sesión</a>
         </p>
