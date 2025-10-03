@@ -5,6 +5,7 @@ import com.clinicadental.gestioncitas.services.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/auth")
@@ -46,10 +47,14 @@ public class AuthController {
     public String procesarRegistro(
             @ModelAttribute Usuario usuario,
             @RequestParam("fechaNacimiento") String fechaNacimiento,
-            @RequestParam("historialClinico") String historialClinico) {
+            @RequestParam("historialClinico") String historialClinico,
+            RedirectAttributes redirectAttributes) {
 
-        usuario.setRol("paciente"); // por defecto
+        usuario.setRol("PACIENTE"); // por defecto
         usuarioService.registrarUsuarioConPaciente(usuario, fechaNacimiento, historialClinico);
+        
+        redirectAttributes.addFlashAttribute("mensaje", "✅ Cuenta creada con éxito");
+
         return "redirect:/auth/login";
     }
 
