@@ -1,14 +1,15 @@
 package com.clinicadental.gestioncitas.entities;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "usuario")
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario") // 🔹 Solución A: mapea correctamente con la columna
     private Long idUsuario;
 
     private String nombre;

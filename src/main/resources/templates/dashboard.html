@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
-    <!-- Navbar -->
+    <!-- navbar -->
     <nav class="bg-blue-600 text-white p-4 flex justify-between items-center">
         <div class="font-bold text-xl">Clínica Dental</div>
         <ul class="flex gap-4">
@@ -33,12 +33,12 @@
         </ul>
     </nav>
 
-    <!-- Contenedor principal -->
+    <!-- contenedor principal -->
     <div class="container mx-auto px-4 py-6 flex-1">
 
         <h1 class="text-3xl font-bold mb-6">Bienvenido al Dashboard</h1>
 
-        <!-- Panel de ADMIN -->
+        <!-- panel ADMIN -->
         <div sec:authorize="hasRole('ADMIN')" class="bg-white p-6 rounded-lg shadow mb-6">
             <h2 class="text-2xl font-semibold mb-4">Panel de Administrador</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
