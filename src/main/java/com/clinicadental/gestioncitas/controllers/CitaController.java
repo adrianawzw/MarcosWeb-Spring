@@ -81,6 +81,7 @@ public class CitaController {
         return "redirect:/admin/citas";
     }
 
+    // ✅ EDITAR
     @GetMapping("/editar/{id}")
     public String editarCita(@PathVariable Long id, Model model) {
         Cita cita = citaRepository.findById(id)

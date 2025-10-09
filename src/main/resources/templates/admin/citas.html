@@ -71,6 +71,7 @@
 </div>
 
 <!-- Modal Nueva / Editar -->
+<!-- Modal Nueva / Editar -->
 <div id="modalCita" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
     <div class="bg-white rounded-lg shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto relative p-6 animate-fadeIn">
         <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">✖</button>
@@ -78,12 +79,11 @@
         <h2 class="text-2xl font-bold mb-4 text-blue-700 text-center"
             th:text="${editar} ? 'Editar Cita' : 'Nueva Cita'">Nueva Cita</h2>
 
-        <form th:action="${editar} ? @{/admin/citas/actualizar} : @{/admin/citas/guardar}"
-              method="post" th:object="${cita}" class="space-y-4">
-
+        <form th:action="@{/admin/citas/guardar}" th:object="${cita}" method="post" class="space-y-4">
+            <!-- ID oculto -->
             <input type="hidden" th:field="*{idCita}" />
 
-            <!-- ODONTOLOGO -->
+            <!-- ODONTÓLOGO -->
             <div>
                 <label class="block text-gray-700 text-sm font-medium">Odontólogo:</label>
                 <select th:field="*{odontologo.idOdontologo}" class="border p-2 w-full rounded-md" required>
@@ -98,7 +98,7 @@
             <!-- CONSULTORIO -->
             <div>
                 <label class="block text-gray-700 text-sm font-medium">Consultorio:</label>
-                <select th:field="*{consultorio.idConsultorio}" class="border p-2 w-full rounded-md">
+                <select th:field="*{consultorio.idConsultorio}" class="border p-2 w-full rounded-md" required>
                     <option value="">Seleccionar Consultorio</option>
                     <option th:each="c : ${consultorios}"
                             th:value="${c.idConsultorio}"
@@ -110,7 +110,7 @@
             <!-- SERVICIO -->
             <div>
                 <label class="block text-gray-700 text-sm font-medium">Servicio:</label>
-                <select th:field="*{servicio.idServicio}" class="border p-2 w-full rounded-md">
+                <select th:field="*{servicio.idServicio}" class="border p-2 w-full rounded-md" required>
                     <option value="">Seleccionar Servicio</option>
                     <option th:each="s : ${servicios}"
                             th:value="${s.idServicio}"
@@ -122,7 +122,8 @@
             <!-- FECHA -->
             <div>
                 <label class="block text-gray-700 text-sm font-medium">Fecha:</label>
-                <input type="date" th:field="*{fecha}"
+                <input type="date"
+                       th:field="*{fecha}"
                        th:value="${#temporals.format(cita.fecha, 'yyyy-MM-dd')}"
                        class="border p-2 w-full rounded-md" required />
             </div>
@@ -131,13 +132,15 @@
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
                     <label class="block text-gray-700 text-sm font-medium">Hora Inicio:</label>
-                    <input type="time" th:field="*{horaInicio}"
+                    <input type="time"
+                           th:field="*{horaInicio}"
                            th:value="${#temporals.format(cita.horaInicio, 'HH:mm')}"
                            class="border p-2 w-full rounded-md" required />
                 </div>
                 <div class="flex-1">
                     <label class="block text-gray-700 text-sm font-medium">Hora Fin:</label>
-                    <input type="time" th:field="*{horaFin}"
+                    <input type="time"
+                           th:field="*{horaFin}"
                            th:value="${#temporals.format(cita.horaFin, 'HH:mm')}"
                            class="border p-2 w-full rounded-md" required />
                 </div>
@@ -159,14 +162,22 @@
                 <textarea th:field="*{observaciones}" class="border p-2 w-full rounded-md" rows="3"></textarea>
             </div>
 
+            <!-- BOTONES -->
             <div class="flex justify-end mt-4">
-                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-gray-600">Cancelar</button>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                        th:text="${editar} ? 'Actualizar' : 'Guardar'">Guardar</button>
+                <button type="button" onclick="closeModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                        th:text="${editar} ? 'Actualizar' : 'Guardar'">
+                    Guardar
+                </button>
             </div>
         </form>
     </div>
 </div>
+
 
 <!-- Animación -->
 <style>

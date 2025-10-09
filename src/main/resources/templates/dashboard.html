@@ -19,8 +19,11 @@
                 <a href="/admin/citas" class="hover:underline">Gestionar Citas</a>
             </li>
             <li sec:authorize="hasRole('ADMIN')">
-                <a href="/admin/usuarios" class="hover:underline">Usuarios</a>
+                <a href="/admin/pacientes" class="hover:underline">Pacientes</a>
             </li>
+			<li sec:authorize="hasRole('ADMIN')">
+			    <a href="/admin/odontologos" class="hover:underline">Odontologos</a>
+			</li>
             <li sec:authorize="hasRole('ODONTOLOGO')">
                 <a href="/odontologo/citas" class="hover:underline">Mis Citas</a>
             </li>
