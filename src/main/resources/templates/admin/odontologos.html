@@ -144,15 +144,15 @@
         modal.show();
     }
 
-	  async function editarOdontologo(id) {
+	  
+	async function editarOdontologo(id) {
 	    try {
-	      // Llamamos a la API para obtener los datos del odontólogo
 	      const response = await fetch(`/admin/odontologos/api/${id}`);
 	      if (!response.ok) throw new Error('Error al obtener odontólogo');
 
 	      const odontologo = await response.json();
 
-	      // Cargar los valores en los inputs del modal
+	      // Cargar valores en el formulario
 	      document.querySelector('[name="nombre"]').value = odontologo.usuario.nombre || '';
 	      document.querySelector('[name="apellido"]').value = odontologo.usuario.apellido || '';
 	      document.querySelector('[name="dni"]').value = odontologo.usuario.dni || '';
@@ -160,23 +160,18 @@
 	      document.querySelector('[name="telefono"]').value = odontologo.usuario.telefono || '';
 	      document.querySelector('[name="direccion"]').value = odontologo.usuario.direccion || '';
 	      document.querySelector('[name="especialidad"]').value = odontologo.especialidad || '';
-	      document.querySelector('[name="nroColegiatura"]').value = odontologo.nroColegiatura || '';
-	      document.querySelector('[name="telefonoConsulta"]').value = odontologo.telefonoConsulta || '';
+	      document.querySelector('[name="fechaContratacion"]').value = odontologo.fechaContratacion || '';
 
-	      // Cambiar acción del formulario para actualizar
-	      const form = document.querySelector('#odontologoModal form');
+	      // Cambiar acción del formulario
+	      const form = document.querySelector('#modalOdontologo form');
 	      form.action = `/admin/odontologos/editar/${id}`;
 
-	      // Ocultamos el campo de contraseña al editar
-	      const passwordField = document.querySelector('#password');
-	      if (passwordField) {
-	        passwordField.closest('.mb-3').style.display = 'none';
-	      }
+	      // Ocultar campo contraseña (si existe)
+	      const passField = document.querySelector('div[th\\:if]');
+	      if (passField) passField.style.display = 'none';
 
-	      // Abrimos el modal
-	      const modal = new bootstrap.Modal(document.getElementById('odontologoModal'));
-	      modal.show();
-
+	      // Abrir modal
+	      abrirModal('modalOdontologo');
 	    } catch (error) {
 	      alert('No se pudo cargar el odontólogo para edición');
 	      console.error(error);

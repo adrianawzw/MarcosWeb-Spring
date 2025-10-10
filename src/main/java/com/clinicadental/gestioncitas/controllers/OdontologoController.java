@@ -82,11 +82,14 @@ public class OdontologoController {
             @RequestParam String nroColegiatura,
             @RequestParam String telefonoConsulta
     ) {
-        Odontologo odontologo = odontologoService.buscarPorId(idOdontologo);
-        if (odontologo != null) {
+        // ✅ Corregido: manejar Optional<Odontologo>
+        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(idOdontologo);
+
+        if (optionalOdontologo.isPresent()) {
+            Odontologo odontologo = optionalOdontologo.get();
             Usuario usuario = odontologo.getUsuario();
 
-            // 🔄 Actualizamos los datos
+            // 🔄 Actualizamos datos del usuario
             usuario.setNombre(nombre);
             usuario.setApellido(apellido);
             usuario.setDni(dni);
@@ -94,22 +97,23 @@ public class OdontologoController {
             usuario.setTelefono(telefono);
             usuario.setDireccion(direccion);
 
-            // Solo si cambia la contraseña
             if (password != null && !password.isBlank()) {
                 usuario.setPassword(password);
             }
 
-            // Volvemos a registrar (usa la misma lógica con encriptado)
+            // Reutilizamos el método de usuarioService (encripta y guarda)
             usuarioService.registrarUsuario(usuario);
 
             odontologo.setEspecialidad(especialidad);
             odontologo.setNroColegiatura(nroColegiatura);
             odontologo.setTelefonoConsulta(telefonoConsulta);
+
             odontologoService.guardar(odontologo);
         }
 
         return "redirect:/admin/odontologos";
     }
+
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id) {
@@ -125,10 +129,11 @@ public class OdontologoController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
+    
     @GetMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<Odontologo> obtenerOdontologoPorId(@PathVariable Long id) {
-        Optional<Odontologo> odontologo = odontologoService.buscarPorIdd(id);
+        Optional<Odontologo> odontologo = odontologoService.buscarPorId(id);
         if (odontologo.isPresent()) {
             return ResponseEntity.ok(odontologo.get());
         } else {
