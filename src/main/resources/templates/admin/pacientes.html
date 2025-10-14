@@ -53,12 +53,24 @@
   <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
     <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Gestión de Pacientes</h1>
 
-    <div class="flex justify-end mb-4">
-      <button onclick="abrirModal('modalPaciente')" 
-              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-        Nuevo Paciente
-      </button>
-    </div>
+	<!-- Botones superiores -->
+	<div class="flex justify-between items-center mb-4">
+	    <!-- Botón Volver -->
+	    <a href="/dashboard"
+	       class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+	        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+	             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+	            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+	        </svg>
+	        Volver al Dashboard
+	    </a>
+
+	    <!-- Botón Nuevo Paciente -->
+	    <button onclick="abrirModal('modalPaciente')" 
+	            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+	        Nuevo Paciente
+	    </button>
+	</div>
 
     <!-- Tabla de pacientes -->
     <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">

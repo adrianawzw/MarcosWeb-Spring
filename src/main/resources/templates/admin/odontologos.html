@@ -4,123 +4,201 @@
     <meta charset="UTF-8">
     <title>Gestión de Odontólogos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+        }
+
+        thead th {
+            background: linear-gradient(90deg, #0d6efd, #007bff);
+            color: white;
+            text-align: center;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        tbody td {
+            border-top: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background-color: #e9f3ff !important;
+            transition: 0.2s ease-in-out;
+        }
+
+        th:first-child, td:first-child {
+            border-left: none;
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056d2;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            border: none;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container py-4">
-    <h2 class="mb-3 text-center">Gestión de Odontólogos</h2>
+    <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary mb-0">Gestión de Odontólogos 👩🏻‍⚕️🦷🧑🏻‍⚕️</h2>
+            <div>
+				<a href="/dashboard" class="btn btn-back me-2">
+				  <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
+				</a>
+                <button class="btn btn-primary" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-circle me-1"></i> Registrar Odontólogo
+                </button>
+            </div>
+        </div>
 
-    <div class="text-end mb-3">
-        <button class="btn btn-primary" onclick="abrirModalNuevo()">Registrar Odontólogo</button>
+        <div class="table-container">
+            <table class="table table-hover align-middle text-center">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Especialidad</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Nro Colegiatura</th>
+                    <th>Teléfono Consulta</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="odontologo : ${odontologos}">
+                    <td th:text="${odontologo.idOdontologo}"></td>
+                    <td th:text="${odontologo.usuario.nombre + ' ' + odontologo.usuario.apellido}"></td>
+                    <td th:text="${odontologo.especialidad}"></td>
+                    <td th:text="${odontologo.usuario.telefono}"></td>
+                    <td th:text="${odontologo.usuario.correo}"></td>
+                    <td th:text="${odontologo.nroColegiatura}"></td>
+                    <td th:text="${odontologo.telefonoConsulta}"></td>
+                    <td>
+                        <button type="button"
+                                class="btn btn-warning btn-sm"
+                                th:onclick="'editarOdontologo(' + ${odontologo.idOdontologo} + ')'">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </button>
+                        <a th:href="@{/admin/odontologos/eliminar/{id}(id=${odontologo.idOdontologo})}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('¿Seguro que deseas eliminar este odontólogo?')">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Nombre Completo</th>
-            <th>Especialidad</th>
-            <th>Teléfono</th>
-            <th>Correo</th>
-            <th>Nro Colegiatura</th>
-            <th>Teléfono Consulta</th>
-            <th>Acciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="odontologo : ${odontologos}">
-            <td th:text="${odontologo.idOdontologo}"></td>
-            <td th:text="${odontologo.usuario.nombre + ' ' + odontologo.usuario.apellido}"></td>
-            <td th:text="${odontologo.especialidad}"></td>
-            <td th:text="${odontologo.usuario.telefono}"></td>
-            <td th:text="${odontologo.usuario.correo}"></td>
-            <td th:text="${odontologo.nroColegiatura}"></td>
-            <td th:text="${odontologo.telefonoConsulta}"></td>
-            <td>
-				<button type="button"
-				        class="btn btn-warning btn-sm"
-				        th:onclick="'editarOdontologo(' + ${odontologo.idOdontologo} + ')'">
-				  Editar
-				</button>
-
-                <a th:href="@{/admin/odontologos/eliminar/{id}(id=${odontologo.idOdontologo})}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('¿Seguro que deseas eliminar este odontólogo?')">Eliminar</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
 </div>
 
 <!-- Modal -->
 <div class="modal fade" id="odontologoModal" tabindex="-1" aria-labelledby="odontologoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg">
             <form id="formOdontologo" th:action="@{/admin/odontologos/guardar}" method="post">
                 <input type="hidden" id="idOdontologo" name="idOdontologo">
 
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="odontologoModalLabel">Registrar Odontólogo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Nombre</label>
+                            <label class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Apellido</label>
+                            <label class="form-label">Apellido</label>
                             <input type="text" class="form-control" id="apellido" name="apellido" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>DNI</label>
+                            <label class="form-label">DNI</label>
                             <input type="text" class="form-control" id="dni" name="dni" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Correo</label>
+                            <label class="form-label">Correo</label>
                             <input type="email" class="form-control" id="correo" name="correo" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Teléfono</label>
+                            <label class="form-label">Teléfono</label>
                             <input type="text" class="form-control" id="telefono" name="telefono">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Dirección</label>
+                            <label class="form-label">Dirección</label>
                             <input type="text" class="form-control" id="direccion" name="direccion">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Contraseña</label>
+                            <label class="form-label">Contraseña</label>
                             <input type="password" class="form-control" id="password" name="password">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Especialidad</label>
+                            <label class="form-label">Especialidad</label>
                             <input type="text" class="form-control" id="especialidad" name="especialidad" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Nro Colegiatura</label>
+                            <label class="form-label">Nro Colegiatura</label>
                             <input type="text" class="form-control" id="nroColegiatura" name="nroColegiatura">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Teléfono Consulta</label>
+                            <label class="form-label">Teléfono Consulta</label>
                             <input type="text" class="form-control" id="telefonoConsulta" name="telefonoConsulta">
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success">Guardar</button>
                 </div>
@@ -129,6 +207,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -144,74 +223,31 @@
         modal.show();
     }
 
-	  
-	async function editarOdontologo(id) {
-	    try {
-	      const response = await fetch(`/admin/odontologos/api/${id}`);
-	      if (!response.ok) throw new Error('Error al obtener odontólogo');
+    async function editarOdontologo(id) {
+        try {
+            const response = await fetch(`/admin/odontologos/api/${id}`);
+            if (!response.ok) throw new Error('Error al obtener odontólogo');
+            const odontologo = await response.json();
 
-	      const odontologo = await response.json();
+            document.querySelector('[name="nombre"]').value = odontologo.usuario?.nombre || '';
+            document.querySelector('[name="apellido"]').value = odontologo.usuario?.apellido || '';
+            document.querySelector('[name="dni"]').value = odontologo.usuario?.dni || '';
+            document.querySelector('[name="correo"]').value = odontologo.usuario?.correo || '';
+            document.querySelector('[name="telefono"]').value = odontologo.usuario?.telefono || '';
+            document.querySelector('[name="direccion"]').value = odontologo.usuario?.direccion || '';
 
-	      // Cargar valores en el formulario
-	      document.querySelector('[name="nombre"]').value = odontologo.usuario.nombre || '';
-	      document.querySelector('[name="apellido"]').value = odontologo.usuario.apellido || '';
-	      document.querySelector('[name="dni"]').value = odontologo.usuario.dni || '';
-	      document.querySelector('[name="correo"]').value = odontologo.usuario.correo || '';
-	      document.querySelector('[name="telefono"]').value = odontologo.usuario.telefono || '';
-	      document.querySelector('[name="direccion"]').value = odontologo.usuario.direccion || '';
-	      document.querySelector('[name="especialidad"]').value = odontologo.especialidad || '';
-	      document.querySelector('[name="fechaContratacion"]').value = odontologo.fechaContratacion || '';
+            document.querySelector('[name="especialidad"]').value = odontologo.especialidad || '';
+            document.querySelector('[name="nroColegiatura"]').value = odontologo.nroColegiatura || '';
+            document.querySelector('[name="telefonoConsulta"]').value = odontologo.telefonoConsulta || '';
 
-	      // Cambiar acción del formulario
-	      const form = document.querySelector('#modalOdontologo form');
-	      form.action = `/admin/odontologos/editar/${id}`;
-
-	      // Ocultar campo contraseña (si existe)
-	      const passField = document.querySelector('div[th\\:if]');
-	      if (passField) passField.style.display = 'none';
-
-	      // Abrir modal
-	      abrirModal('modalOdontologo');
-	    } catch (error) {
-	      alert('No se pudo cargar el odontólogo para edición');
-	      console.error(error);
-	    }
-	  }
-
-</script>
-<script>
-  async function editarOdontologo(id) {
-    try {
-      const response = await fetch(`/admin/odontologos/api/${id}`);
-      if (!response.ok) throw new Error('Error al obtener odontólogo');
-
-      const odontologo = await response.json();
-
-      // Cargar valores en el formulario
-      document.querySelector('[name="nombre"]').value = odontologo.usuario.nombre || '';
-      document.querySelector('[name="apellido"]').value = odontologo.usuario.apellido || '';
-      document.querySelector('[name="dni"]').value = odontologo.usuario.dni || '';
-      document.querySelector('[name="correo"]').value = odontologo.usuario.correo || '';
-      document.querySelector('[name="telefono"]').value = odontologo.usuario.telefono || '';
-      document.querySelector('[name="direccion"]').value = odontologo.usuario.direccion || '';
-      document.querySelector('[name="especialidad"]').value = odontologo.especialidad || '';
-      document.querySelector('[name="fechaContratacion"]').value = odontologo.fechaContratacion || '';
-
-      // Cambiar acción del formulario
-      const form = document.querySelector('#modalOdontologo form');
-      form.action = `/admin/odontologos/editar/${id}`;
-
-      // Ocultar campo contraseña (si existe)
-      const passField = document.querySelector('div[th\\:if]');
-      if (passField) passField.style.display = 'none';
-
-      // Abrir modal
-      abrirModal('modalOdontologo');
-    } catch (error) {
-      alert('No se pudo cargar el odontólogo para edición');
-      console.error(error);
+            form.action = `/admin/odontologos/editar/${id}`;
+            titulo.textContent = "Editar Odontólogo";
+            modal.show();
+        } catch (error) {
+            alert('No se pudo cargar el odontólogo para edición');
+            console.error(error);
+        }
     }
-  }
 </script>
 
 </body>

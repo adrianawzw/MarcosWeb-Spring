@@ -68,9 +68,9 @@ public class OdontologoController {
         return "redirect:/admin/odontologos";
     }
 
-    @PostMapping("/editar")
+    @PostMapping("/editar/{id}")
     public String editar(
-            @RequestParam Long idOdontologo,
+    		@PathVariable Long id,
             @RequestParam String nombre,
             @RequestParam String apellido,
             @RequestParam String dni,
@@ -83,7 +83,7 @@ public class OdontologoController {
             @RequestParam String telefonoConsulta
     ) {
         // ✅ Corregido: manejar Optional<Odontologo>
-        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(idOdontologo);
+        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(id);
 
         if (optionalOdontologo.isPresent()) {
             Odontologo odontologo = optionalOdontologo.get();
@@ -121,13 +121,7 @@ public class OdontologoController {
         return "redirect:/admin/odontologos";
     }
     
-    @GetMapping("/admin/odontologos/api/{id}")
-    @ResponseBody
-    public ResponseEntity<Odontologo> obtenerOdontologo(@PathVariable Long id) {
-        return odontologoService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+    
     
     
     @GetMapping("/api/{id}")
