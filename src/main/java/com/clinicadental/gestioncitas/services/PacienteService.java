@@ -30,6 +30,19 @@ public class PacienteService {
         return pacienteRepository.findAll();
     }
 
+    // --- NUEVO MÉTODO DE BÚSQUEDA ---
+    /**
+     * Busca Pacientes cuyo nombre, apellido, DNI o teléfono contenga el término dado.
+     * @param termino El texto a buscar.
+     * @return Una lista de Pacientes que coinciden con el término.
+     */
+    public List<Paciente> buscarPorTermino(String termino) {
+        String likeTermino = "%" + termino + "%";
+        // Delega la búsqueda al repositorio
+        return pacienteRepository.buscarPorTermino(likeTermino);
+    }
+    // --------------------------------
+
     public Paciente obtenerPorId(Long id) {
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));

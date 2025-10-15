@@ -5,14 +5,21 @@
   <title>Pacientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // Configuración para el manejo de modales
     function abrirModal(id) {
+      // Mostrar el modal
       document.getElementById(id).classList.remove('hidden');
+      // Asegurarse de que el campo de contraseña sea requerido al crear uno nuevo
+      const passInput = document.querySelector('#modalPaciente input[name="password"]');
+      if (passInput) passInput.required = (document.querySelector('#modalPaciente form').action.indexOf('/editar/') === -1);
+      // Asegurarse de que el div de contraseña se muestre si es nuevo
+      const passDiv = document.getElementById('password-field');
+      if (passDiv) passDiv.style.display = passInput.required ? 'block' : 'none';
     }
     function cerrarModal(id) {
       document.getElementById(id).classList.add('hidden');
     }
-  </script>
-  <script>
+
     async function editarPaciente(id) {
       try {
         const response = await fetch(`/admin/pacientes/api/${id}`);
@@ -21,173 +28,227 @@
         const paciente = await response.json();
 
         // Cargar los valores en los inputs del modal
-        document.querySelector('[name="nombre"]').value = paciente.usuario.nombre || '';
-        document.querySelector('[name="apellido"]').value = paciente.usuario.apellido || '';
-        document.querySelector('[name="dni"]').value = paciente.usuario.dni || '';
-        document.querySelector('[name="correo"]').value = paciente.usuario.correo || '';
-        document.querySelector('[name="telefono"]').value = paciente.usuario.telefono || '';
-        document.querySelector('[name="direccion"]').value = paciente.usuario.direccion || '';
-        document.querySelector('[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
-        document.querySelector('[name="historialClinico"]').value = paciente.historialClinico || '';
+        document.querySelector('#modalPaciente input[name="nombre"]').value = paciente.usuario?.nombre || '';
+        document.querySelector('#modalPaciente input[name="apellido"]').value = paciente.usuario?.apellido || '';
+        document.querySelector('#modalPaciente input[name="dni"]').value = paciente.usuario?.dni || '';
+        document.querySelector('#modalPaciente input[name="correo"]').value = paciente.usuario?.correo || '';
+        document.querySelector('#modalPaciente input[name="telefono"]').value = paciente.usuario?.telefono || '';
+        document.querySelector('#modalPaciente input[name="direccion"]').value = paciente.usuario?.direccion || '';
+        document.querySelector('#modalPaciente input[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
+        document.querySelector('#modalPaciente textarea[name="historialClinico"]').value = paciente.historialClinico || '';
+        // Asignar el ID al usuario, si tu formulario lo gestiona
+        document.querySelector('#modalPaciente input[name="usuario.idUsuario"]').value = paciente.usuario?.idUsuario || '';
 
-        // Cambiar acción del formulario para actualizar
+        // Cambiar título
+        document.getElementById('modalTitle').textContent = 'Editar Paciente';
+
+        // Cambiar acción del formulario para actualizar (usando el endpoint de guardar que manejará la lógica de actualización)
         const form = document.querySelector('#modalPaciente form');
-        form.action = `/admin/pacientes/editar/${id}`;
+        form.action = `/admin/pacientes/guardar`; // Usamos guardar para simplificar, el servicio debe manejar si tiene ID
 
-        // Ocultamos el campo contraseña al editar
-        const passField = document.querySelector('div[th\\:if]');
-        if (passField) passField.style.display = 'none';
+        // Ocultamos el campo contraseña y lo hacemos no requerido al editar
+        const passDiv = document.getElementById('password-field');
+        if (passDiv) passDiv.style.display = 'none';
+        const passInput = document.querySelector('#modalPaciente input[name="password"]');
+        if (passInput) passInput.required = false;
 
         // Abrimos el modal
         abrirModal('modalPaciente');
       } catch (error) {
-        alert('No se pudo cargar el paciente para edición');
-        console.error(error);
+        console.error('No se pudo cargar el paciente para edición:', error);
       }
+    }
+    
+    function resetModal() {
+        const form = document.querySelector('#modalPaciente form');
+        form.reset();
+        form.action = `/admin/pacientes/guardar`; // Volver a la acción de guardar
+        document.querySelector('#modalTitle').textContent = 'Nuevo Paciente';
+        
+        // Mostrar campo contraseña y hacerlo requerido
+        const passDiv = document.getElementById('password-field');
+        if (passDiv) passDiv.style.display = 'block';
+        const passInput = document.querySelector('#modalPaciente input[name="password"]');
+        if (passInput) passInput.required = true;
+        
+        // Resetear el ID de usuario a null/vacío
+        document.querySelector('#modalPaciente input[name="usuario.idUsuario"]').value = '';
+        abrirModal('modalPaciente');
     }
   </script>
 
 </head>
 
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-100 p-8 font-['Inter', sans-serif]">
   <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
-    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Gestión de Pacientes</h1>
+    <h1 class="text-3xl font-extrabold mb-6 text-center text-blue-700">Gestión de Pacientes 😷</h1>
 
-	<!-- Botones superiores -->
-	<div class="flex justify-between items-center mb-4">
-	    <!-- Botón Volver -->
-	    <a href="/dashboard"
-	       class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
-	        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-	             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-	            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-	        </svg>
-	        Volver al Dashboard
-	    </a>
+	<!-- Botones superiores y Buscador -->
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+	    
+	    <!-- Grupo de Volver y Nuevo -->
+	    <div class="flex gap-3 w-full sm:w-auto order-2 sm:order-1">
+	        <!-- Botón Volver -->
+	        <a href="/dashboard"
+	           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2 transition duration-150 ease-in-out">
+	            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+	                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+	                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+	            </svg>
+	            Dashboard
+	        </a>
+	    
+	        <!-- Botón Nuevo Paciente -->
+	        <button onclick="resetModal()" 
+	                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
+	            Nuevo Paciente
+	        </button>
+	    </div>
 
-	    <!-- Botón Nuevo Paciente -->
-	    <button onclick="abrirModal('modalPaciente')" 
-	            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-	        Nuevo Paciente
-	    </button>
+        <!-- Buscador -->
+        <form th:action="@{/admin/pacientes}" method="get" class="flex gap-2 w-full sm:w-1/2 order-1 sm:order-2">
+            <input type="text" name="buscar" th:value="${buscar}" 
+                   placeholder="Buscar por Nombre, DNI o Teléfono..."
+                   class="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-shrink-0">
+                Buscar
+            </button>
+             <a th:href="@{/admin/pacientes}" th:if="${buscar != null and !buscar.isEmpty()}"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex-shrink-0">
+                Limpiar
+            </a>
+        </form>
 	</div>
 
+    <!-- Mensaje si no hay pacientes -->
+    <div th:if="${pacientes.empty and (buscar == null or buscar.isEmpty())}" class="p-4 bg-yellow-100 text-yellow-700 rounded-lg text-center my-4">
+        No hay pacientes registrados en el sistema.
+    </div>
+
+    <!-- Mensaje si la búsqueda no arroja resultados -->
+    <div th:if="${pacientes.empty and buscar != null and !buscar.isEmpty()}" class="p-4 bg-red-100 text-red-700 rounded-lg text-center my-4">
+        No se encontraron pacientes para el término: <span class="font-bold" th:text="${buscar}"></span>.
+    </div>
+    
     <!-- Tabla de pacientes -->
-    <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-      <thead class="bg-blue-600 text-white">
-        <tr>
-          <th class="p-2 text-left">ID</th>
-          <th class="p-2 text-left">Nombre</th>
-          <th class="p-2 text-left">Correo</th>
-          <th class="p-2 text-left">DNI</th>
-          <th class="p-2 text-left">Teléfono</th>
-          <th class="p-2 text-left">Fecha Nacimiento</th>
-          <th class="p-2 text-left">Historial Clínico</th>
-          <th class="p-2 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="paciente : ${pacientes}" class="border-b hover:bg-gray-100">
-          <td class="p-2" th:text="${paciente.idPaciente}"></td>
-          <td class="p-2" th:text="${paciente.usuario.nombre + ' ' + paciente.usuario.apellido}"></td>
-          <td class="p-2" th:text="${paciente.usuario.correo}"></td>
-          <td class="p-2" th:text="${paciente.usuario.dni}"></td>
-          <td class="p-2" th:text="${paciente.usuario.telefono}"></td>
-          <td class="p-2" th:text="${paciente.fechaNacimiento}"></td>
-          <td class="p-2" th:text="${paciente.historialClinico}"></td>
-          <td class="p-2 text-center space-x-2">
-			<button type="button"
-			        class="text-blue-500 hover:underline"
-			        th:onclick="'editarPaciente(' + ${paciente.idPaciente} + ')'">
-			  Editar
-			</button>
-            <a th:href="@{/admin/pacientes/eliminar/{id}(id=${paciente.idPaciente})}" 
-               class="text-red-500 hover:underline"
-               onclick="return confirm('¿Seguro que deseas eliminar este paciente?')">Eliminar</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div th:unless="${pacientes.empty}">
+        <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+          <thead class="bg-blue-600 text-white">
+            <tr>
+              <th class="p-3 text-left">ID</th>
+              <th class="p-3 text-left">Nombre</th>
+              <th class="p-3 text-left">Correo</th>
+              <th class="p-3 text-left">DNI</th>
+              <th class="p-3 text-left">Teléfono</th>
+              <th class="p-3 text-left">Fecha Nacimiento</th>
+              <th class="p-3 text-left">Historial Clínico</th>
+              <th class="p-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="paciente : ${pacientes}" class="border-b hover:bg-gray-100 transition duration-100">
+              <td class="p-3" th:text="${paciente.idPaciente}"></td>
+              <td class="p-3" th:text="${paciente.usuario.nombre + ' ' + paciente.usuario.apellido}"></td>
+              <td class="p-3" th:text="${paciente.usuario.correo}"></td>
+              <td class="p-3" th:text="${paciente.usuario.dni}"></td>
+              <td class="p-3" th:text="${paciente.usuario.telefono}"></td>
+              <td class="p-3" th:text="${paciente.fechaNacimiento}"></td>
+              <td class="p-3 truncate max-w-xs" th:text="${paciente.historialClinico}"></td>
+              <td class="p-3 text-center space-x-2">
+    			<button type="button"
+    			        class="text-blue-500 hover:text-blue-700 font-medium transition duration-150"
+    			        th:onclick="'editarPaciente(' + ${paciente.idPaciente} + ')'">
+    			  Editar
+    			</button>
+                <a th:href="@{/admin/pacientes/eliminar/{id}(id=${paciente.idPaciente})}" 
+                   class="text-red-500 hover:text-red-700 font-medium transition duration-150"
+                   onclick="return confirm('¿Seguro que deseas eliminar este paciente?')">Eliminar</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+
   </div>
 
   <!-- MODAL NUEVO/EDITAR PACIENTE -->
   <div id="modalPaciente" 
-       class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
-      <h2 class="text-xl font-semibold text-center text-blue-600 mb-4"
-          th:text="${paciente.idPaciente != null} ? 'Editar Paciente' : 'Nuevo Paciente'"></h2>
+       class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 transition-all transform duration-300 scale-100">
+      <h2 id="modalTitle" class="text-2xl font-bold text-center text-blue-600 mb-5">Nuevo Paciente</h2>
 
-      <form th:action="@{/admin/pacientes/guardar}" method="post" class="space-y-3">
+      <form th:action="@{/admin/pacientes/guardar}" method="post" class="space-y-4">
+        <!-- Campo oculto para manejar el ID del usuario al editar -->
+        <input type="hidden" name="usuario.idUsuario" value=""> 
 
         <!-- CAMPOS USUARIO -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block font-semibold">Nombre:</label>
-            <input type="text" name="nombre" th:value="${paciente.usuario != null ? paciente.usuario.nombre : ''}" required
-                   class="w-full border border-gray-300 rounded-lg p-2">
+            <label class="block font-semibold text-gray-700">Nombre:</label>
+            <input type="text" name="nombre" required
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
           </div>
           <div>
-            <label class="block font-semibold">Apellido:</label>
-            <input type="text" name="apellido" th:value="${paciente.usuario != null ? paciente.usuario.apellido : ''}" required
-                   class="w-full border border-gray-300 rounded-lg p-2">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold">DNI:</label>
-            <input type="text" name="dni" th:value="${paciente.usuario != null ? paciente.usuario.dni : ''}" required
-                   class="w-full border border-gray-300 rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold">Correo:</label>
-            <input type="email" name="correo" th:value="${paciente.usuario != null ? paciente.usuario.correo : ''}" required
-                   class="w-full border border-gray-300 rounded-lg p-2">
+            <label class="block font-semibold text-gray-700">Apellido:</label>
+            <input type="text" name="apellido" required
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block font-semibold">Teléfono:</label>
-            <input type="text" name="telefono" th:value="${paciente.usuario != null ? paciente.usuario.telefono : ''}"
-                   class="w-full border border-gray-300 rounded-lg p-2">
+            <label class="block font-semibold text-gray-700">DNI:</label>
+            <input type="text" name="dni" required
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
           </div>
           <div>
-            <label class="block font-semibold">Dirección:</label>
-            <input type="text" name="direccion" th:value="${paciente.usuario != null ? paciente.usuario.direccion : ''}"
-                   class="w-full border border-gray-300 rounded-lg p-2">
+            <label class="block font-semibold text-gray-700">Correo:</label>
+            <input type="email" name="correo" required
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
           </div>
         </div>
 
-        <!-- Solo mostrar contraseña si es nuevo -->
-        <div th:if="${paciente.idPaciente == null}">
-          <label class="block font-semibold">Contraseña:</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-gray-700">Teléfono:</label>
+            <input type="text" name="telefono"
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-700">Dirección:</label>
+            <input type="text" name="direccion"
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
+          </div>
+        </div>
+
+        <!-- Campo Contraseña (visible solo al crear) -->
+        <div id="password-field">
+          <label class="block font-semibold text-gray-700">Contraseña:</label>
           <input type="password" name="password" required
-                 class="w-full border border-gray-300 rounded-lg p-2">
+                 class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
         </div>
 
         <!-- CAMPOS PACIENTE -->
-        <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
           <div>
-            <label class="block font-semibold">Fecha de Nacimiento:</label>
-            <input type="date" name="fechaNacimiento" th:value="${paciente.fechaNacimiento}"
-                   class="w-full border border-gray-300 rounded-lg p-2">
+            <label class="block font-semibold text-gray-700">Fecha de Nacimiento:</label>
+            <input type="date" name="fechaNacimiento"
+                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
           </div>
-          <div>
-            <label class="block font-semibold">Historial Clínico:</label>
-            <textarea name="historialClinico"
-                      class="w-full border border-gray-300 rounded-lg p-2"
-                      th:text="${paciente.historialClinico}"></textarea>
+          <div class="sm:col-span-2">
+            <label class="block font-semibold text-gray-700">Historial Clínico:</label>
+            <textarea name="historialClinico" rows="3"
+                      class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150"></textarea>
           </div>
         </div>
 
-        <div class="flex justify-between mt-6">
+        <div class="flex justify-end gap-3 pt-4">
           <button type="button" onclick="cerrarModal('modalPaciente')"
-                  class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
+                  class="px-5 py-2 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition duration-150">
             Cancelar
           </button>
           <button type="submit"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-150">
             Guardar
           </button>
         </div>

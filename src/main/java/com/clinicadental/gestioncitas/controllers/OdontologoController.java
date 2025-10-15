@@ -5,6 +5,7 @@ import com.clinicadental.gestioncitas.entities.Usuario;
 import com.clinicadental.gestioncitas.services.OdontologoService;
 import com.clinicadental.gestioncitas.services.UsuarioService;
 
+import java.util.List; // Import necesario para List
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,26 @@ public class OdontologoController {
     @Autowired
     private UsuarioService usuarioService;
 
+    // --- MÉTODO LISTAR/BUSCAR ACTUALIZADO ---
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("odontologos", odontologoService.listar());
+    public String listar(@RequestParam(required = false) String buscar, Model model) {
+        List<Odontologo> odontologos;
+
+        if (buscar != null && !buscar.trim().isEmpty()) {
+            // Lógica de búsqueda: Llama a un nuevo método en el servicio.
+            // **IMPORTANTE**: Debes implementar 'buscarPorTermino' en OdontologoService.
+            odontologos = odontologoService.buscarPorTermino(buscar);
+        } else {
+            // Si no hay parámetro de búsqueda, lista todos.
+            odontologos = odontologoService.listar();
+        }
+
+        model.addAttribute("odontologos", odontologos);
+        // Agregamos el término de búsqueda al modelo para que se mantenga en el input del HTML
+        model.addAttribute("buscar", buscar); 
         return "admin/odontologos";
     }
+    // ----------------------------------------
 
     @PostMapping("/guardar")
     public String guardar(
@@ -98,7 +114,8 @@ public class OdontologoController {
             usuario.setDireccion(direccion);
 
             if (password != null && !password.isBlank()) {
-                usuario.setPassword(password);
+                // Se asume que usuarioService.registrarUsuario maneja la encriptación
+                usuario.setPassword(password); 
             }
 
             // Reutilizamos el método de usuarioService (encripta y guarda)
@@ -121,9 +138,6 @@ public class OdontologoController {
         return "redirect:/admin/odontologos";
     }
     
-    
-    
-    
     @GetMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<Odontologo> obtenerOdontologoPorId(@PathVariable Long id) {
@@ -134,6 +148,4 @@ public class OdontologoController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
 }

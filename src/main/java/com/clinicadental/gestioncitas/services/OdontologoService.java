@@ -33,5 +33,16 @@ public class OdontologoService {
         return odontologoRepository.findById(id);
     }
 
+    /**
+     * Busca Odontólogos cuyo nombre, apellido, DNI, o Nro Colegiatura contenga el término dado.
+     * @param termino El texto a buscar.
+     * @return Una lista de Odontólogos que coinciden con el término.
+     */
+    public List<Odontologo> buscarPorTermino(String termino) {
+        // Delega al repositorio, que debe implementar el método con la sintaxis de Spring Data JPA.
+        // Se utiliza el comodín % para búsquedas "LIKE" en el repositorio.
+        String likeTermino = "%" + termino + "%";
+        return odontologoRepository.buscarPorTermino(likeTermino);
+    }
 
 }

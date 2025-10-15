@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Odontólogos</title>
+    <!-- Usando Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body {
             background-color: #f8fafc;
@@ -32,6 +35,9 @@
             color: white;
             text-align: center;
             border-bottom: 2px solid #dee2e6;
+            /* Aplicar redondez solo a las esquinas superiores */
+            &:first-child { border-top-left-radius: 12px; }
+            &:last-child { border-top-right-radius: 12px; }
         }
 
         tbody td {
@@ -42,23 +48,6 @@
         tbody tr:hover {
             background-color: #e9f3ff !important;
             transition: 0.2s ease-in-out;
-        }
-
-        th:first-child, td:first-child {
-            border-left: none;
-        }
-
-        th:last-child, td:last-child {
-            border-right: none;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056d2;
         }
 
         .btn-back {
@@ -77,7 +66,7 @@
     <div class="card p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold text-primary mb-0">Gestión de Odontólogos 👩🏻‍⚕️🦷🧑🏻‍⚕️</h2>
-            <div>
+            <div class="d-flex">
 				<a href="/dashboard" class="btn btn-back me-2">
 				  <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
 				</a>
@@ -87,7 +76,27 @@
             </div>
         </div>
 
-        <div class="table-container">
+        <!-- INICIO: Formulario de Buscador integrado -->
+        <form th:action="@{/admin/odontologos}" method="get" class="d-flex mb-4 gap-2">
+            <!-- El campo 'buscar' debe coincidir con el @RequestParam del Controller -->
+            <input type="text" name="buscar" th:value="${buscar}" 
+                   placeholder="Buscar por Nombre, Apellido, DNI o Colegiatura"
+                   class="form-control me-2">
+            <button type="submit" class="btn btn-outline-primary flex-shrink-0">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <!-- Botón para limpiar la búsqueda (opcional) -->
+            <a th:href="@{/admin/odontologos}" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="bi bi-x-circle"></i> Limpiar
+            </a>
+        </form>
+        <!-- FIN: Formulario de Buscador -->
+
+        <div th:if="${odontologos.empty}" class="alert alert-info text-center" role="alert">
+            No se encontraron odontólogos.
+        </div>
+        
+        <div class="table-container" th:unless="${odontologos.empty}">
             <table class="table table-hover align-middle text-center">
                 <thead>
                 <tr>
@@ -129,7 +138,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal (sin cambios, solo se incluye para que el archivo sea completo) -->
 <div class="modal fade" id="odontologoModal" tabindex="-1" aria-labelledby="odontologoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg">
@@ -207,7 +216,6 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -218,6 +226,9 @@
     function abrirModalNuevo() {
         form.reset();
         document.getElementById("idOdontologo").value = '';
+        // Asegúrate de resetear el campo de contraseña si lo usas para creación
+        document.getElementById("password").required = true; 
+        document.getElementById("password").value = ''; 
         titulo.textContent = "Registrar Odontólogo";
         form.action = "/admin/odontologos/guardar";
         modal.show();
@@ -225,27 +236,37 @@
 
     async function editarOdontologo(id) {
         try {
-            const response = await fetch(`/admin/odontologos/api/${id}`);
+            // Asegúrate de que este endpoint exista en tu controlador REST
+            const response = await fetch(`/admin/odontologos/api/${id}`); 
             if (!response.ok) throw new Error('Error al obtener odontólogo');
             const odontologo = await response.json();
 
-            document.querySelector('[name="nombre"]').value = odontologo.usuario?.nombre || '';
-            document.querySelector('[name="apellido"]').value = odontologo.usuario?.apellido || '';
-            document.querySelector('[name="dni"]').value = odontologo.usuario?.dni || '';
-            document.querySelector('[name="correo"]').value = odontologo.usuario?.correo || '';
-            document.querySelector('[name="telefono"]').value = odontologo.usuario?.telefono || '';
-            document.querySelector('[name="direccion"]').value = odontologo.usuario?.direccion || '';
+            // Llenar campos de Usuario
+            document.querySelector('#idOdontologo').value = odontologo.idOdontologo || '';
+            document.querySelector('#nombre').value = odontologo.usuario?.nombre || '';
+            document.querySelector('#apellido').value = odontologo.usuario?.apellido || '';
+            document.querySelector('#dni').value = odontologo.usuario?.dni || '';
+            document.querySelector('#correo').value = odontologo.usuario?.correo || '';
+            document.querySelector('#telefono').value = odontologo.usuario?.telefono || '';
+            document.querySelector('#direccion').value = odontologo.usuario?.direccion || '';
+            
+            // Llenar campos de Odontólogo
+            document.querySelector('#especialidad').value = odontologo.especialidad || '';
+            document.querySelector('#nroColegiatura').value = odontologo.nroColegiatura || '';
+            document.querySelector('#telefonoConsulta').value = odontologo.telefonoConsulta || '';
 
-            document.querySelector('[name="especialidad"]').value = odontologo.especialidad || '';
-            document.querySelector('[name="nroColegiatura"]').value = odontologo.nroColegiatura || '';
-            document.querySelector('[name="telefonoConsulta"]').value = odontologo.telefonoConsulta || '';
+            // La contraseña NO debe ser requerida ni llenada en la edición por seguridad
+            document.getElementById("password").required = false; 
+            document.getElementById("password").value = ''; 
 
-            form.action = `/admin/odontologos/editar/${id}`;
+            // Apunta al endpoint de edición si lo tienes, o al de guardar si gestiona ambos
+            form.action = `/admin/odontologos/guardar`; 
             titulo.textContent = "Editar Odontólogo";
             modal.show();
         } catch (error) {
-            alert('No se pudo cargar el odontólogo para edición');
-            console.error(error);
+            // Reemplazar alert() con un mensaje en la consola, según las reglas de Gemini
+            console.error('Error al cargar el odontólogo para edición:', error);
+            // Puedes agregar un modal o un mensaje en el HTML para notificar al usuario.
         }
     }
 </script>

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin/pacientes")
 public class PacienteController {
@@ -23,12 +25,25 @@ public class PacienteController {
         this.pacienteRepository = pacienteRepository;
     }
 
+    // --- MÉTODO LISTAR/BUSCAR ACTUALIZADO ---
     @GetMapping
-    public String listarPacientes(Model model) {
-        model.addAttribute("pacientes", pacienteService.listarPacientes());
-        model.addAttribute("paciente", new Paciente());
+    public String listarPacientes(@RequestParam(required = false) String buscar, Model model) {
+        List<Paciente> pacientes;
+        
+        if (buscar != null && !buscar.trim().isEmpty()) {
+            // Llama al nuevo método de búsqueda en el servicio
+            pacientes = pacienteService.buscarPorTermino(buscar);
+        } else {
+            // Si no hay término de búsqueda, lista todos
+            pacientes = pacienteService.listarPacientes();
+        }
+        
+        model.addAttribute("pacientes", pacientes);
+        model.addAttribute("paciente", new Paciente()); // Para el modal de nuevo/editar
+        model.addAttribute("buscar", buscar); // Importante para mantener el valor en el input
         return "admin/pacientes";
     }
+    // ----------------------------------------
 
     @PostMapping("/guardar")
     public String guardarPaciente(
