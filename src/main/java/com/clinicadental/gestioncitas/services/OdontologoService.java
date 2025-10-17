@@ -25,24 +25,18 @@ public class OdontologoService {
         odontologoRepository.deleteById(id);
     }
     
-    public Optional<Odontologo> obtenerPorId(Long id) {
-        return odontologoRepository.findById(id);
-    }
-    
+    // ✅ MANTENER SOLO UNO - eliminar el otro
     public Optional<Odontologo> buscarPorId(Long id) {
         return odontologoRepository.findById(id);
     }
 
-    /**
-     * Busca Odontólogos cuyo nombre, apellido, DNI, o Nro Colegiatura contenga el término dado.
-     * @param termino El texto a buscar.
-     * @return Una lista de Odontólogos que coinciden con el término.
-     */
+    // ❌ ELIMINAR ESTE MÉTODO DUPLICADO
+    // public Optional<Odontologo> obtenerPorId(Long id) {
+    //     return odontologoRepository.findById(id);
+    // }
+
     public List<Odontologo> buscarPorTermino(String termino) {
-        // Delega al repositorio, que debe implementar el método con la sintaxis de Spring Data JPA.
-        // Se utiliza el comodín % para búsquedas "LIKE" en el repositorio.
         String likeTermino = "%" + termino + "%";
         return odontologoRepository.buscarPorTermino(likeTermino);
     }
-
 }

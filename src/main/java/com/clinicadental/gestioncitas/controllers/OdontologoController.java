@@ -58,7 +58,7 @@ public class OdontologoController {
             @RequestParam String nroColegiatura,
             @RequestParam String telefonoConsulta
     ) {
-        // 1️⃣ Crear usuario
+        // ➕ MODO CREACIÓN (sin cambios)
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
@@ -69,10 +69,8 @@ public class OdontologoController {
         usuario.setPassword(password);
         usuario.setRol("ODONTOLOGO");
 
-        // 2️⃣ Registrar el usuario (usa tu método que ya encripta y guarda)
         Usuario nuevoUsuario = usuarioService.registrarUsuario(usuario);
 
-        // 3️⃣ Crear odontólogo
         Odontologo odontologo = new Odontologo();
         odontologo.setUsuario(nuevoUsuario);
         odontologo.setEspecialidad(especialidad);
@@ -84,9 +82,9 @@ public class OdontologoController {
         return "redirect:/admin/odontologos";
     }
 
-    @PostMapping("/editar/{id}")
+    @PostMapping("/editar")
     public String editar(
-    		@PathVariable Long id,
+            @RequestParam Long idOdontologo,  // ✅ Ahora es requerido para edición
             @RequestParam String nombre,
             @RequestParam String apellido,
             @RequestParam String dni,
@@ -98,14 +96,14 @@ public class OdontologoController {
             @RequestParam String nroColegiatura,
             @RequestParam String telefonoConsulta
     ) {
-        // ✅ Corregido: manejar Optional<Odontologo>
-        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(id);
+        // 🔄 MODO EDICIÓN
+        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(idOdontologo);
 
         if (optionalOdontologo.isPresent()) {
             Odontologo odontologo = optionalOdontologo.get();
             Usuario usuario = odontologo.getUsuario();
 
-            // 🔄 Actualizamos datos del usuario
+            // Actualizar datos del usuario
             usuario.setNombre(nombre);
             usuario.setApellido(apellido);
             usuario.setDni(dni);
@@ -114,11 +112,9 @@ public class OdontologoController {
             usuario.setDireccion(direccion);
 
             if (password != null && !password.isBlank()) {
-                // Se asume que usuarioService.registrarUsuario maneja la encriptación
-                usuario.setPassword(password); 
+                usuario.setPassword(password);
             }
 
-            // Reutilizamos el método de usuarioService (encripta y guarda)
             usuarioService.registrarUsuario(usuario);
 
             odontologo.setEspecialidad(especialidad);
@@ -130,7 +126,6 @@ public class OdontologoController {
 
         return "redirect:/admin/odontologos";
     }
-
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id) {

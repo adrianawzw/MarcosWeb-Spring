@@ -5,76 +5,95 @@
   <title>Pacientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Configuración para el manejo de modales
-    function abrirModal(id) {
-      // Mostrar el modal
-      document.getElementById(id).classList.remove('hidden');
-      // Asegurarse de que el campo de contraseña sea requerido al crear uno nuevo
-      const passInput = document.querySelector('#modalPaciente input[name="password"]');
-      if (passInput) passInput.required = (document.querySelector('#modalPaciente form').action.indexOf('/editar/') === -1);
-      // Asegurarse de que el div de contraseña se muestre si es nuevo
-      const passDiv = document.getElementById('password-field');
-      if (passDiv) passDiv.style.display = passInput.required ? 'block' : 'none';
-    }
-    function cerrarModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    async function editarPaciente(id) {
-      try {
-        const response = await fetch(`/admin/pacientes/api/${id}`);
-        if (!response.ok) throw new Error('Error al obtener paciente');
-
-        const paciente = await response.json();
-
-        // Cargar los valores en los inputs del modal
-        document.querySelector('#modalPaciente input[name="nombre"]').value = paciente.usuario?.nombre || '';
-        document.querySelector('#modalPaciente input[name="apellido"]').value = paciente.usuario?.apellido || '';
-        document.querySelector('#modalPaciente input[name="dni"]').value = paciente.usuario?.dni || '';
-        document.querySelector('#modalPaciente input[name="correo"]').value = paciente.usuario?.correo || '';
-        document.querySelector('#modalPaciente input[name="telefono"]').value = paciente.usuario?.telefono || '';
-        document.querySelector('#modalPaciente input[name="direccion"]').value = paciente.usuario?.direccion || '';
-        document.querySelector('#modalPaciente input[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
-        document.querySelector('#modalPaciente textarea[name="historialClinico"]').value = paciente.historialClinico || '';
-        // Asignar el ID al usuario, si tu formulario lo gestiona
-        document.querySelector('#modalPaciente input[name="usuario.idUsuario"]').value = paciente.usuario?.idUsuario || '';
-
-        // Cambiar título
-        document.getElementById('modalTitle').textContent = 'Editar Paciente';
-
-        // Cambiar acción del formulario para actualizar (usando el endpoint de guardar que manejará la lógica de actualización)
-        const form = document.querySelector('#modalPaciente form');
-        form.action = `/admin/pacientes/guardar`; // Usamos guardar para simplificar, el servicio debe manejar si tiene ID
-
-        // Ocultamos el campo contraseña y lo hacemos no requerido al editar
-        const passDiv = document.getElementById('password-field');
-        if (passDiv) passDiv.style.display = 'none';
-        const passInput = document.querySelector('#modalPaciente input[name="password"]');
-        if (passInput) passInput.required = false;
-
-        // Abrimos el modal
-        abrirModal('modalPaciente');
-      } catch (error) {
-        console.error('No se pudo cargar el paciente para edición:', error);
+      // Configuración para el manejo de modales
+      function abrirModal(id) {
+          const modal = document.getElementById(id);
+          modal.classList.remove('hidden');
+          document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+          
+          // Enfocar el primer campo del formulario
+          setTimeout(() => {
+              const firstInput = modal.querySelector('input, textarea, select');
+              if (firstInput) firstInput.focus();
+          }, 100);
       }
-    }
-    
-    function resetModal() {
-        const form = document.querySelector('#modalPaciente form');
-        form.reset();
-        form.action = `/admin/pacientes/guardar`; // Volver a la acción de guardar
-        document.querySelector('#modalTitle').textContent = 'Nuevo Paciente';
-        
-        // Mostrar campo contraseña y hacerlo requerido
-        const passDiv = document.getElementById('password-field');
-        if (passDiv) passDiv.style.display = 'block';
-        const passInput = document.querySelector('#modalPaciente input[name="password"]');
-        if (passInput) passInput.required = true;
-        
-        // Resetear el ID de usuario a null/vacío
-        document.querySelector('#modalPaciente input[name="usuario.idUsuario"]').value = '';
-        abrirModal('modalPaciente');
-    }
+
+      function cerrarModal(id) {
+          const modal = document.getElementById(id);
+          modal.classList.add('hidden');
+          document.body.style.overflow = 'auto'; // Restaurar scroll del body
+      }
+
+	  async function editarPaciente(id) {
+	      try {
+	          const response = await fetch(`/admin/pacientes/api/${id}`);
+	          
+	          if (!response.ok) throw new Error('Error al obtener paciente');
+	          const paciente = await response.json();
+	          
+	          console.log('Datos recibidos:', paciente);
+
+	          // Cargar los valores en los inputs del modal
+	          document.querySelector('input[name="nombre"]').value = paciente.usuario?.nombre || '';
+	          document.querySelector('input[name="apellido"]').value = paciente.usuario?.apellido || '';
+	          document.querySelector('input[name="dni"]').value = paciente.usuario?.dni || '';
+	          document.querySelector('input[name="correo"]').value = paciente.usuario?.correo || '';
+	          document.querySelector('input[name="telefono"]').value = paciente.usuario?.telefono || '';
+	          document.querySelector('input[name="direccion"]').value = paciente.usuario?.direccion || '';
+	          document.querySelector('input[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
+	          document.querySelector('textarea[name="historialClinico"]').value = paciente.historialClinico || '';
+	          
+	          // ✅ Solo asignar el ID del paciente, NO el del usuario
+	          document.querySelector('#idPaciente').value = paciente.idPaciente || '';
+
+	          // Cambiar título
+	          document.getElementById('modalTitle').textContent = 'Editar Paciente';
+
+	          // ✅ Usar el mismo endpoint para guardar/editar
+	          const form = document.querySelector('#modalPaciente form');
+	          form.action = `/admin/pacientes/guardar`;
+
+	          // Ocultar campo contraseña
+	          const passDiv = document.getElementById('password-field');
+	          if (passDiv) passDiv.style.display = 'none';
+
+	          // Abrir modal
+	          abrirModal('modalPaciente');
+	      } catch (error) {
+	          console.error('No se pudo cargar el paciente para edición:', error);
+	          alert('Error al cargar los datos del paciente');
+	      }
+	  }
+
+	  function resetModal() {
+	      const form = document.querySelector('#modalPaciente form');
+	      form.reset();
+	      form.action = `/admin/pacientes/guardar`;
+	      document.getElementById('modalTitle').textContent = 'Nuevo Paciente';
+	      
+	      // Mostrar campo contraseña
+	      const passDiv = document.getElementById('password-field');
+	      if (passDiv) passDiv.style.display = 'block';
+	      
+	      // ✅ Limpiar solo el ID del paciente
+	      document.querySelector('#idPaciente').value = '';
+	      
+	      abrirModal('modalPaciente');
+	  }
+
+      // Cerrar modal al hacer click fuera del contenido
+      document.getElementById('modalPaciente').addEventListener('click', function(e) {
+          if (e.target.id === 'modalPaciente') {
+              cerrarModal('modalPaciente');
+          }
+      });
+
+      // Cerrar modal con tecla Escape
+      document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+              cerrarModal('modalPaciente');
+          }
+      });
   </script>
 
 </head>
@@ -168,91 +187,105 @@
           </tbody>
         </table>
     </div>
-
   </div>
 
   <!-- MODAL NUEVO/EDITAR PACIENTE -->
+  <!-- MODAL NUEVO/EDITAR PACIENTE CORREGIDO -->
   <div id="modalPaciente" 
-       class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 transition-all transform duration-300 scale-100">
-      <h2 id="modalTitle" class="text-2xl font-bold text-center text-blue-600 mb-5">Nuevo Paciente</h2>
-
-      <form th:action="@{/admin/pacientes/guardar}" method="post" class="space-y-4">
-        <!-- Campo oculto para manejar el ID del usuario al editar -->
-        <input type="hidden" name="usuario.idUsuario" value=""> 
-
-        <!-- CAMPOS USUARIO -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-gray-700">Nombre:</label>
-            <input type="text" name="nombre" required
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-          <div>
-            <label class="block font-semibold text-gray-700">Apellido:</label>
-            <input type="text" name="apellido" required
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
+       class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 p-4 overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl my-8 overflow-hidden flex flex-col">
+        
+        <!-- Header fijo -->
+        <div class="flex-shrink-0 p-6 border-b border-gray-200 bg-white">
+          <h2 id="modalTitle" class="text-2xl font-bold text-center text-blue-600">Nuevo Paciente</h2>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-gray-700">DNI:</label>
-            <input type="text" name="dni" required
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-          <div>
-            <label class="block font-semibold text-gray-700">Correo:</label>
-            <input type="email" name="correo" required
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-        </div>
+        <!-- Formulario con scroll -->
+        <form th:action="@{/admin/pacientes/guardar}" method="post" class="flex flex-col h-full">
+          <!-- Contenido scrollable -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh]">
+            <!-- Campo oculto para el ID del paciente en edición -->
+            <input type="hidden" id="idPaciente" name="idPaciente" value="">
+            <input type="hidden" id="usuarioId" name="usuario.idUsuario" value="">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-gray-700">Teléfono:</label>
-            <input type="text" name="telefono"
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-          <div>
-            <label class="block font-semibold text-gray-700">Dirección:</label>
-            <input type="text" name="direccion"
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-        </div>
+            <!-- CAMPOS USUARIO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Nombre:</label>
+                <input type="text" name="nombre" required
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Apellido:</label>
+                <input type="text" name="apellido" required
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+            </div>
 
-        <!-- Campo Contraseña (visible solo al crear) -->
-        <div id="password-field">
-          <label class="block font-semibold text-gray-700">Contraseña:</label>
-          <input type="password" name="password" required
-                 class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-        </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">DNI:</label>
+                <input type="text" name="dni" required
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Correo:</label>
+                <input type="email" name="correo" required
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+            </div>
 
-        <!-- CAMPOS PACIENTE -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
-          <div>
-            <label class="block font-semibold text-gray-700">Fecha de Nacimiento:</label>
-            <input type="date" name="fechaNacimiento"
-                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block font-semibold text-gray-700">Historial Clínico:</label>
-            <textarea name="historialClinico" rows="3"
-                      class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-blue-500 transition duration-150"></textarea>
-          </div>
-        </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Teléfono:</label>
+                <input type="text" name="telefono"
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Dirección:</label>
+                <input type="text" name="direccion"
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+            </div>
 
-        <div class="flex justify-end gap-3 pt-4">
-          <button type="button" onclick="cerrarModal('modalPaciente')"
-                  class="px-5 py-2 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition duration-150">
-            Cancelar
-          </button>
-          <button type="submit"
-                  class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-150">
-            Guardar
-          </button>
-        </div>
-      </form>
+            <!-- Campo Contraseña (visible solo al crear) -->
+            <div id="password-field">
+              <label class="block font-semibold text-gray-700 mb-2">Contraseña:</label>
+              <input type="password" name="password" required
+                     class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+            </div>
+
+            <!-- CAMPOS PACIENTE -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+              <div>
+                <label class="block font-semibold text-gray-700 mb-2">Fecha de Nacimiento:</label>
+                <input type="date" name="fechaNacimiento"
+                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block font-semibold text-gray-700 mb-2">Historial Clínico:</label>
+                <textarea name="historialClinico" rows="3"
+                          class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer fijo -->
+          <div class="flex-shrink-0 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div class="flex justify-end gap-3">
+              <button type="button" onclick="cerrarModal('modalPaciente')"
+                      class="px-5 py-2.5 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition duration-150">
+                Cancelar
+              </button>
+              <button type="submit"
+                      class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-150">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </body>
