@@ -89,11 +89,91 @@
         </div>
 
         <!-- PANEL PACIENTE -->
-        <div sec:authorize="hasRole('PACIENTE')" class="glass p-8 rounded-3xl shadow-lg mb-8">
-            <h2 class="text-2xl font-bold text-blue-700 mb-4">Panel de Paciente</h2>
-            <p class="text-gray-700">Aquí puedes consultar tus citas y próximos tratamientos.</p>
-        </div>
+		<div sec:authorize="hasRole('PACIENTE')" class="glass p-8 rounded-3xl shadow-lg mb-8">
+		            <h2 class="text-2xl font-bold text-blue-700 mb-6">Panel de Paciente</h2>
+		            
+		            <!-- Tarjetas de navegación -->
+		            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+		                <!-- Tarjeta 1: Ver Citas Disponibles -->
+		                <a href="/paciente/citas-disponibles" 
+		                   class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+		                    <div class="text-center">
+		                        <div class="text-3xl mb-3">📅</div>
+		                        <h3 class="text-xl font-bold mb-2">Ver Citas Disponibles</h3>
+		                        <p class="text-blue-100">Encuentra y reserva tu próxima cita médica</p>
+		                    </div>
+		                </a>
 
+		                <!-- Tarjeta 2: Mis Citas Reservadas -->
+		                <a href="/paciente/mis-citas" 
+		                   class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+		                    <div class="text-center">
+		                        <div class="text-3xl mb-3">📋</div>
+		                        <h3 class="text-xl font-bold mb-2">Mis Citas Reservadas</h3>
+		                        <p class="text-green-100">Revisa, cancela o descarga comprobantes de tus citas</p>
+		                    </div>
+		                </a>
+
+		                <!-- Mi Perfil: faltaaaa -->
+		                <a href="/paciente/perfil" 
+		                   class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+		                    <div class="text-center">
+		                        <div class="text-3xl mb-3">👤</div>
+		                        <h3 class="text-xl font-bold mb-2">Mi Perfil</h3>
+		                        <p class="text-purple-100">Actualiza tu información personal y contacto</p>
+		                    </div>
+		                </a>
+		            </div>
+
+
+						<!-- Información importante - Versión compacta -->
+						<div class="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-2xl shadow-lg border border-green-200">
+						    <h3 class="text-xl font-bold text-green-800 mb-6 text-center">ℹ️ Información Importante para Pacientes</h3>
+						    
+						    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+						        <!-- Tarjeta 1 -->
+						        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+						            <div class="text-blue-500 text-lg mb-2">🔒</div>
+						            <h4 class="font-semibold text-gray-800 text-sm mb-2">Límite de Citas</h4>
+						            <p class="text-xs text-gray-600">Máximo 3 citas activas simultáneamente</p>
+						        </div>
+
+						        <!-- Tarjeta 2 -->
+						        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
+						            <div class="text-green-500 text-lg mb-2">⏰</div>
+						            <h4 class="font-semibold text-gray-800 text-sm mb-2">Puntualidad</h4>
+						            <p class="text-xs text-gray-600">Llegar 15 minutos antes de tu cita</p>
+						        </div>
+
+						        <!-- Tarjeta 3 -->
+						        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
+						            <div class="text-orange-500 text-lg mb-2">🚫</div>
+						            <h4 class="font-semibold text-gray-800 text-sm mb-2">Cancelaciones</h4>
+						            <p class="text-xs text-gray-600">Cancelar con 24 horas de anticipación</p>
+						        </div>
+
+						        <!-- Tarjeta 4 -->
+						        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500">
+						            <div class="text-purple-500 text-lg mb-2">📄</div>
+						            <h4 class="font-semibold text-gray-800 text-sm mb-2">Comprobante</h4>
+						            <p class="text-xs text-gray-600">Descargar PDF después de reservar</p>
+						        </div>
+						    </div>
+
+						    <!-- Recordatorio -->
+						    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+						        <div class="flex items-center gap-3">
+						            <span class="text-yellow-500 text-xl">💡</span>
+						            <div>
+						                <p class="text-sm font-semibold text-yellow-800">¿Necesitas ayuda?</p>
+						                <p class="text-xs text-yellow-700">Contacta con nosotros al (01) 234-5678 o por email</p>
+						            </div>
+						        </div>
+						    </div>
+						</div>
+		            </div>
+		        </div>
+				
         <!-- GRÁFICO ADMIN -->
         <div sec:authorize="hasRole('ADMIN')" class="glass p-8 rounded-3xl shadow-lg">
             <h3 class="text-xl font-semibold mb-4 text-blue-700">📊 Citas por semana</h3>

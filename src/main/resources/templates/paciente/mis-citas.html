@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Citas Reservadas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function confirmarCancelacion(idCita) {
+        if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
+            document.getElementById('cancelForm' + idCita).submit();
+        }
+    }
+  </script>
+</head>
+
+<body class="bg-gray-100 p-8 font-['Inter', sans-serif]">
+  <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <h1 class="text-3xl font-extrabold mb-6 text-center text-green-700">Mis Citas Reservadas 📋</h1>
+
+    <!-- Navegación -->
+    <div class="flex justify-between items-center mb-6">
+      <a href="/dashboard" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-150">
+        ← Volver al Dashboard
+      </a>
+      <a href="/paciente/citas-disponibles" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150">
+        Reservar Nueva Cita
+      </a>
+    </div>
+
+    <!-- Mensajes -->
+    <div th:if="${param.success}" class="p-4 bg-green-100 text-green-700 rounded-lg mb-4">
+      <span th:if="${param.success == 'cancelacion_exitosa'}">✅ Cita cancelada exitosamente</span>
+    </div>
+
+    <div th:if="${param.error}" class="p-4 bg-red-100 text-red-700 rounded-lg mb-4">
+      Error: <span th:text="${param.error}"></span>
+    </div>
+
+    <div th:if="${error}" class="p-4 bg-red-100 text-red-700 rounded-lg mb-4" th:text="${error}"></div>
+
+    <!-- Mis citas reservadas -->
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Mis Citas Activas</h2>
+    
+    <div th:if="${misCitas.empty}" class="p-4 bg-yellow-100 text-yellow-700 rounded-lg text-center">
+      No tienes citas reservadas actualmente.
+      <a href="/paciente/citas-disponibles" class="text-blue-600 underline ml-2">Reservar una cita</a>
+    </div>
+
+    <div th:unless="${misCitas.empty}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+      <div th:each="cita : ${misCitas}" 
+           class="border border-green-300 rounded-lg p-4 bg-green-50 hover:bg-green-100 transition duration-150">
+        <div class="font-semibold text-lg text-green-800 mb-2" th:text="'Cita #' + ${cita.idCita}"></div>
+        
+        <div class="text-sm text-gray-600 space-y-1 mb-4">
+          <div><strong>📅 Fecha:</strong> <span th:text="${#temporals.format(cita.fecha, 'dd/MM/yyyy')}"></span></div>
+          <div><strong>🕐 Hora:</strong> <span th:text="${#temporals.format(cita.horaInicio, 'HH:mm')} + ' - ' + ${#temporals.format(cita.horaFin, 'HH:mm')}"></span></div>
+          <div><strong>👨‍⚕️ Odontólogo:</strong> <span th:text="${cita.odontologo.usuario.nombre} + ' ' + ${cita.odontologo.usuario.apellido}"></span></div>
+          <div><strong>🏥 Consultorio:</strong> <span th:text="${cita.consultorio.nombre}"></span></div>
+          <div><strong>🦷 Servicio:</strong> <span th:text="${cita.servicio.nombre}"></span></div>
+          <div><strong>📍 Ubicación:</strong> <span th:text="${cita.consultorio.ubicacion}"></span></div>
+          <div><strong>📝 Estado:</strong> <span class="font-semibold text-green-600" th:text="${cita.estado}"></span></div>
+        </div>
+
+        <div class="flex gap-2">
+          <a th:href="@{/paciente/descargar-pdf/{id}(id=${cita.idCita})}"
+             class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 text-center">
+            📄 Descargar PDF
+          </a>
+          
+          <form th:id="'cancelForm' + ${cita.idCita}" 
+                th:action="@{/paciente/cancelar-cita/{id}(id=${cita.idCita})}" 
+                method="post" class="flex-1">
+            <button type="button" 
+                    th:onclick="'confirmarCancelacion(' + ${cita.idCita} + ')'"
+                    class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition duration-150">
+              ❌ Cancelar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información -->
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <h3 class="font-semibold text-blue-800 mb-2">📋 Información importante:</h3>
+      <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+        <li>Puedes tener máximo 3 citas reservadas simultáneamente</li>
+        <li>Descarga el comprobante PDF para presentarlo el día de tu cita</li>
+        <li>Llega 15 minutos antes de tu hora programada</li>
+        <li>Puedes cancelar tu cita hasta 24 horas antes</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
