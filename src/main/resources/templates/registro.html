@@ -1,94 +1,126 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Paciente</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Paciente | Clínica Dental Vida Plena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.6s ease-out;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .glow-input:focus {
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+  </style>
 </head>
-<body class="bg-blue-50 min-h-screen flex items-center justify-center">
 
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Registro de Paciente</h2>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 font-['Inter',sans-serif]">
 
-		<!-- Bloque de alerta -->
-		    <div th:if="${mensaje}" 
-		         class="mb-4 p-3 rounded bg-green-100 border border-green-400 text-green-700 text-center">
-		        <p th:text="${mensaje}"></p>
-		    </div>
-			
-        <form th:action="@{/auth/registro}" th:object="${usuario}" method="post" class="space-y-3">
-
-			<!-- Nombre y Apellido -->
-			    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-			        <input type="text" th:field="*{nombre}" placeholder="Nombre" 
-			               maxlength="50" required
-			               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-			        <input type="text" th:field="*{apellido}" placeholder="Apellido" 
-			               maxlength="50" required
-			               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-			    </div>
-
-			    <!-- DNI y Teléfono -->
-			    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-			        <input type="text" th:field="*{dni}" placeholder="DNI" 
-			               maxlength="8" required
-			               pattern="[0-9]{8}" title="El DNI debe tener entre 8 dígitos"
-			               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-			        <input type="text" th:field="*{telefono}" placeholder="Teléfono"
-			               maxlength="14"
-			               pattern="[0-9+ ]{0,14}" title="Ingrese un teléfono válido (mínimo 6 dígitos)"
-			               class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-			    </div>
-
-				<!-- Correo -->
-				   <input type="email" th:field="*{correo}" placeholder="Correo" 
-				          maxlength="150" required
-				          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-				   <!-- Dirección -->
-				   <input type="text" th:field="*{direccion}" placeholder="Dirección"
-				          maxlength="255"
-         class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-
-		 <!-- Contraseña con ojo -->
-		  <div class="relative w-full">
-			 <input type="password" id="password" th:field="*{password}" placeholder="Contraseña" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10">
-			 <button type="button" id="togglePassword" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"> ✔ 
-			 </button> 
-		 </div> 
-		 
-		 <!-- Fecha de nacimiento --> 
-		 <label for="fechaNacimiento" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label> 
-		 <input type="date" id="fechaNacimiento" name="fechaNacimiento" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-		  
-		 <!-- Historial clínico --> 
-		 <input type="hidden" name="historialClinico" value=""> 
-		 
-		 <!-- Botón --> 
-		 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded transition">
-			Registrar 
-		 </button>
-        </form>
-
-        <p class="mt-3 text-gray-600 text-sm text-center">
-            ¿Ya tienes cuenta? 
-            <a th:href="@{/auth/login}" class="text-blue-500 hover:underline">Inicia sesión</a>
-        </p>
+  <div class="glass w-full max-w-2xl p-10 rounded-3xl shadow-2xl animate-fadeIn border border-white/40">
+    
+    <!-- Encabezado -->
+    <div class="text-center mb-6">
+      <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-500 mb-1">
+        🦷 Vida Plena
+      </div>
+      <p class="text-gray-600 text-sm">Sistema de Registro de Pacientes</p>
     </div>
 
-    <!-- Script para mostrar/ocultar contraseña -->
-    <script>
-        const passwordInput = document.getElementById('password');
-        const togglePassword = document.getElementById('togglePassword');
+    <h2 class="text-2xl font-bold mb-6 text-center text-blue-700">Registro de Paciente</h2>
 
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            togglePassword.textContent = type === 'password' ? '✔' : '❌';
-        });
-    </script>
+    <!-- Mensaje de éxito -->
+    <div th:if="${mensaje}" 
+         class="mb-4 p-3 rounded-xl bg-green-50 border border-green-400 text-green-700 text-center shadow-sm">
+      <p th:text="${mensaje}"></p>
+    </div>
+
+    <form th:action="@{/auth/registro}" th:object="${usuario}" method="post" class="space-y-5">
+      
+      <!-- Nombre y Apellido -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" th:field="*{nombre}" placeholder="Nombre" maxlength="50" required
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+        <input type="text" th:field="*{apellido}" placeholder="Apellido" maxlength="50" required
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+      </div>
+
+      <!-- DNI y Teléfono -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" th:field="*{dni}" placeholder="DNI" maxlength="8" required
+               pattern="[0-9]{8}" title="El DNI debe tener 8 dígitos"
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+        <input type="text" th:field="*{telefono}" placeholder="Teléfono"
+               maxlength="14" pattern="[0-9+ ]{0,14}" title="Ingrese un teléfono válido"
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+      </div>
+
+      <!-- Correo -->
+      <input type="email" th:field="*{correo}" placeholder="Correo electrónico" maxlength="150" required
+             class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+
+      <!-- Dirección -->
+      <input type="text" th:field="*{direccion}" placeholder="Dirección" maxlength="255"
+             class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+
+      <!-- Contraseña -->
+      <div class="relative">
+        <input type="password" id="password" th:field="*{password}" placeholder="Contraseña" required
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input pr-10">
+        <button type="button" id="togglePassword"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition">
+          👁️
+        </button>
+      </div>
+
+      <!-- Fecha de nacimiento -->
+      <div>
+        <label for="fechaNacimiento" class="block text-sm font-semibold text-gray-700 mb-1">
+          Fecha de Nacimiento
+        </label>
+        <input type="date" id="fechaNacimiento" name="fechaNacimiento" required
+               class="w-full p-3 rounded-xl border border-gray-300 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input">
+      </div>
+
+      <!-- Historial clínico -->
+      <input type="hidden" name="historialClinico" value="">
+
+      <!-- Botón -->
+      <button type="submit"
+              class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white font-semibold shadow-lg hover:scale-105 hover:shadow-xl transition">
+        Registrar
+      </button>
+    </form>
+
+    <!-- Enlace a login -->
+    <p class="mt-6 text-gray-600 text-sm text-center">
+      ¿Ya tienes cuenta?
+      <a th:href="@{/auth/login}" class="text-blue-600 font-semibold hover:underline hover:text-blue-800 transition">
+        Inicia sesión
+      </a>
+    </p>
+  </div>
+
+  <!-- Script mostrar/ocultar contraseña -->
+  <script>
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+  </script>
 
 </body>
 </html>

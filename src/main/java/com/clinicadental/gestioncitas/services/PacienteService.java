@@ -27,47 +27,51 @@ public class PacienteService {
         boolean esCreacion = (paciente.getIdPaciente() == null);
         
         if (esCreacion) {
-            // 🔄 MODO CREACIÓN
-            
-            // ✅ Verificar si ya existe un paciente con el mismo DNI
-            if (pacienteRepository.existsByDni(usuario.getDni())) {
-                throw new RuntimeException("Ya existe un paciente con el DNI: " + usuario.getDni());
-            }
-            
-            // ✅ Verificar si ya existe un paciente con el mismo correo
-            if (pacienteRepository.existsByCorreo(usuario.getCorreo())) {
-                throw new RuntimeException("Ya existe un paciente con el correo: " + usuario.getCorreo());
-            }
-            
-            // ✅ Crear NUEVO usuario
-            usuario.setRol("PACIENTE");
-            Usuario usuarioGuardado = usuarioService.registrarUsuario(usuario);
-            
-            // Configurar paciente
-            paciente.setUsuario(usuarioGuardado);
-            
-            if (fechaNacimiento != null && !fechaNacimiento.isEmpty()) {
-                paciente.setFechaNacimiento(LocalDate.parse(fechaNacimiento));
-            }
-            
-            if (historialClinico != null && !historialClinico.isEmpty()) {
-                paciente.setHistorialClinico(historialClinico);
-            }
-            
-            pacienteRepository.save(paciente);
+        	guardarNuevoPaciente(paciente, usuario, fechaNacimiento, historialClinico);
         } else {
             // 🔄 MODO EDICIÓN
-            actualizarPaciente(paciente.getIdPaciente(), usuario, fechaNacimiento, historialClinico);
+            //actualizarPaciente(paciente.getIdPaciente(), usuario, fechaNacimiento, historialClinico);
+        	actualizarPacienteExistente(paciente.getIdPaciente(), usuario, fechaNacimiento, historialClinico);
         }
     }
 
     @Transactional
-    public void actualizarPaciente(Long idPaciente, Usuario datosUsuario, 
-                                   String fechaNacimiento, String historialClinico) {
+    private void guardarNuevoPaciente(Paciente paciente, Usuario usuario, String fechaNacimiento, String historialClinico) {
+        // ✅ Verificar si ya existe un paciente con el mismo DNI
+        if (pacienteRepository.existsByDni(usuario.getDni())) {
+            throw new RuntimeException("Ya existe un paciente con el DNI: " + usuario.getDni());
+        }
+        
+        // ✅ Verificar si ya existe un paciente con el mismo correo
+        if (pacienteRepository.existsByCorreo(usuario.getCorreo())) {
+            throw new RuntimeException("Ya existe un paciente con el correo: " + usuario.getCorreo());
+        }
+        
+        // ✅ Crear NUEVO usuario
+        usuario.setRol("PACIENTE");
+        Usuario usuarioGuardado = usuarioService.registrarUsuario(usuario);
+        
+        // Configurar paciente
+        paciente.setUsuario(usuarioGuardado);
+        
+        if (fechaNacimiento != null && !fechaNacimiento.isEmpty()) {
+            paciente.setFechaNacimiento(LocalDate.parse(fechaNacimiento));
+        }
+        
+        if (historialClinico != null && !historialClinico.isEmpty()) {
+            paciente.setHistorialClinico(historialClinico);
+        }
+        
+        pacienteRepository.save(paciente);
+    }
+    
+    @Transactional
+    public void actualizarPacienteExistente(Long idPaciente, Usuario datosUsuario, 
+                                           String fechaNacimiento, String historialClinico) {
         Paciente pacienteExistente = obtenerPorId(idPaciente);
         Usuario usuarioExistente = pacienteExistente.getUsuario();
 
-        // ✅ Verificar si el DNI ya existe en OTRO paciente (solo si cambió)
+        // ✅ Verificar DNI único (solo si cambió)
         if (!usuarioExistente.getDni().equals(datosUsuario.getDni())) {
             Optional<Paciente> pacienteConMismoDni = pacienteRepository.findByUsuarioDni(datosUsuario.getDni());
             if (pacienteConMismoDni.isPresent() && 
@@ -76,7 +80,7 @@ public class PacienteService {
             }
         }
 
-        // ✅ Verificar si el correo ya existe en OTRO paciente (solo si cambió)
+        // ✅ Verificar correo único (solo si cambió)
         if (!usuarioExistente.getCorreo().equals(datosUsuario.getCorreo())) {
             Optional<Paciente> pacienteConMismoCorreo = pacienteRepository.findByUsuarioCorreo(datosUsuario.getCorreo());
             if (pacienteConMismoCorreo.isPresent() && 
@@ -85,31 +89,28 @@ public class PacienteService {
             }
         }
 
-        // Actualizar datos del usuario existente
+        // ✅ Actualizar datos del usuario
         usuarioExistente.setNombre(datosUsuario.getNombre());
         usuarioExistente.setApellido(datosUsuario.getApellido());
         usuarioExistente.setDni(datosUsuario.getDni());
         usuarioExistente.setCorreo(datosUsuario.getCorreo());
         usuarioExistente.setTelefono(datosUsuario.getTelefono());
         usuarioExistente.setDireccion(datosUsuario.getDireccion());
-        
-        // Actualizar contraseña si se proporciona
-        if (datosUsuario.getPassword() != null && !datosUsuario.getPassword().isEmpty()) {
-            usuarioExistente.setPassword(datosUsuario.getPassword());
-        }
 
-        // Actualizar paciente
+        // ✅ Actualizar paciente
         if (fechaNacimiento != null && !fechaNacimiento.isEmpty()) {
             pacienteExistente.setFechaNacimiento(LocalDate.parse(fechaNacimiento));
         }
         
-        pacienteExistente.setHistorialClinico(historialClinico);
+        if (historialClinico != null) {
+            pacienteExistente.setHistorialClinico(historialClinico);
+        }
 
-        // Guardar cambios
+        // ✅ Guardar cambios
         usuarioService.registrarUsuario(usuarioExistente);
         pacienteRepository.save(pacienteExistente);
     }
-
+    
     // ✅ Método para buscar por término (mejorado)
     public List<Paciente> buscarPorTermino(String termino) {
         return pacienteRepository.buscarPorTermino(termino);

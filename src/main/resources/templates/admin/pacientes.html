@@ -5,288 +5,263 @@
   <title>Pacientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-      // Configuración para el manejo de modales
-      function abrirModal(id) {
-          const modal = document.getElementById(id);
-          modal.classList.remove('hidden');
-          document.body.style.overflow = 'hidden'; // Prevenir scroll del body
-          
-          // Enfocar el primer campo del formulario
-          setTimeout(() => {
-              const firstInput = modal.querySelector('input, textarea, select');
-              if (firstInput) firstInput.focus();
-          }, 100);
-      }
-
-      function cerrarModal(id) {
-          const modal = document.getElementById(id);
-          modal.classList.add('hidden');
-          document.body.style.overflow = 'auto'; // Restaurar scroll del body
-      }
-
-	  async function editarPaciente(id) {
-	      try {
-	          const response = await fetch(`/admin/pacientes/api/${id}`);
+	
+	// Configuración para el manejo de modales
+	      function abrirModal(id) {
+	          const modal = document.getElementById(id);
+	          modal.classList.remove('hidden');
+	          document.body.style.overflow = 'hidden'; // Prevenir scroll del body
 	          
-	          if (!response.ok) throw new Error('Error al obtener paciente');
-	          const paciente = await response.json();
-	          
-	          console.log('Datos recibidos:', paciente);
-
-	          // Cargar los valores en los inputs del modal
-	          document.querySelector('input[name="nombre"]').value = paciente.usuario?.nombre || '';
-	          document.querySelector('input[name="apellido"]').value = paciente.usuario?.apellido || '';
-	          document.querySelector('input[name="dni"]').value = paciente.usuario?.dni || '';
-	          document.querySelector('input[name="correo"]').value = paciente.usuario?.correo || '';
-	          document.querySelector('input[name="telefono"]').value = paciente.usuario?.telefono || '';
-	          document.querySelector('input[name="direccion"]').value = paciente.usuario?.direccion || '';
-	          document.querySelector('input[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
-	          document.querySelector('textarea[name="historialClinico"]').value = paciente.historialClinico || '';
-	          
-	          // ✅ Solo asignar el ID del paciente, NO el del usuario
-	          document.querySelector('#idPaciente').value = paciente.idPaciente || '';
-
-	          // Cambiar título
-	          document.getElementById('modalTitle').textContent = 'Editar Paciente';
-
-	          // ✅ Usar el mismo endpoint para guardar/editar
-	          const form = document.querySelector('#modalPaciente form');
-	          form.action = `/admin/pacientes/guardar`;
-
-	          // Ocultar campo contraseña
-	          const passDiv = document.getElementById('password-field');
-	          if (passDiv) passDiv.style.display = 'none';
-
-	          // Abrir modal
-	          abrirModal('modalPaciente');
-	      } catch (error) {
-	          console.error('No se pudo cargar el paciente para edición:', error);
-	          alert('Error al cargar los datos del paciente');
+	          // Enfocar el primer campo del formulario
+	          setTimeout(() => {
+	              const firstInput = modal.querySelector('input, textarea, select');
+	              if (firstInput) firstInput.focus();
+	          }, 100);
 	      }
-	  }
 
-	  function resetModal() {
-	      const form = document.querySelector('#modalPaciente form');
-	      form.reset();
-	      form.action = `/admin/pacientes/guardar`;
-	      document.getElementById('modalTitle').textContent = 'Nuevo Paciente';
-	      
-	      // Mostrar campo contraseña
-	      const passDiv = document.getElementById('password-field');
-	      if (passDiv) passDiv.style.display = 'block';
-	      
-	      // ✅ Limpiar solo el ID del paciente
-	      document.querySelector('#idPaciente').value = '';
-	      
-	      abrirModal('modalPaciente');
-	  }
+	      function cerrarModal(id) {
+	          const modal = document.getElementById(id);
+	          modal.classList.add('hidden');
+	          document.body.style.overflow = 'auto'; // Restaurar scroll del body
+	      }
+      // ✅ FUNCIÓN MEJORADA para editar paciente
+      async function editarPaciente(id) {
+          try {
+              const response = await fetch(`/admin/pacientes/api/${id}`);
+              
+              if (!response.ok) throw new Error('Error al obtener paciente');
+              const paciente = await response.json();
+              
+              console.log('Datos recibidos para edición:', paciente);
 
-      // Cerrar modal al hacer click fuera del contenido
-      document.getElementById('modalPaciente').addEventListener('click', function(e) {
+              // ✅ Cargar datos en el formulario
+              document.querySelector('input[name="nombre"]').value = paciente.usuario?.nombre || '';
+              document.querySelector('input[name="apellido"]').value = paciente.usuario?.apellido || '';
+              document.querySelector('input[name="dni"]').value = paciente.usuario?.dni || '';
+              document.querySelector('input[name="correo"]').value = paciente.usuario?.correo || '';
+              document.querySelector('input[name="telefono"]').value = paciente.usuario?.telefono || '';
+              document.querySelector('input[name="direccion"]').value = paciente.usuario?.direccion || '';
+              document.querySelector('input[name="fechaNacimiento"]').value = paciente.fechaNacimiento || '';
+              document.querySelector('textarea[name="historialClinico"]').value = paciente.historialClinico || '';
+              
+              // ✅ Asignar ID del paciente para edición
+              document.querySelector('#idPaciente').value = paciente.idPaciente || '';
+
+              // Cambiar título
+              document.getElementById('modalTitle').textContent = 'Editar Paciente';
+
+              // ✅ Ocultar y marcar contraseña como no requerida en edición
+              const passField = document.getElementById('password-field');
+              const passInput = document.querySelector('input[name="password"]');
+              if (passField) passField.style.display = 'none';
+              if (passInput) {
+                  passInput.removeAttribute('required');
+                  passInput.value = ''; // Limpiar campo
+              }
+
+              // Abrir modal
+              abrirModal('modalPaciente');
+          } catch (error) {
+              console.error('Error cargando paciente:', error);
+              alert('Error al cargar los datos del paciente: ' + error.message);
+          }
+      }
+
+      // ✅ FUNCIÓN MEJORADA para nuevo paciente
+      function resetModal() {
+          const form = document.querySelector('#modalPaciente form');
+          form.reset();
+          document.getElementById('modalTitle').textContent = 'Nuevo Paciente';
+          
+          // ✅ Mostrar y hacer requerido el campo contraseña
+          const passField = document.getElementById('password-field');
+          const passInput = document.querySelector('input[name="password"]');
+          if (passField) passField.style.display = 'block';
+          if (passInput) {
+              passInput.setAttribute('required', 'required');
+          }
+          
+          // ✅ Limpiar ID del paciente
+          document.querySelector('#idPaciente').value = '';
+          
+          abrirModal('modalPaciente');
+      }
+
+      // ✅ Cerrar modal al hacer click fuera
+      document.addEventListener('click', function(e) {
           if (e.target.id === 'modalPaciente') {
               cerrarModal('modalPaciente');
           }
       });
-
-      // Cerrar modal con tecla Escape
-      document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') {
-              cerrarModal('modalPaciente');
-          }
-      });
   </script>
+  <style>
+      /* --- animaciones suaves y efectos --- */
+      @keyframes fadeIn {from{opacity:0;transform:scale(0.95);} to{opacity:1;transform:scale(1);}}
+      .animate-fadeIn {animation: fadeIn .3s ease-out;}
+      .glow-input:focus {box-shadow:0 0 8px rgba(59,130,246,0.5);}
+      .glass {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.3);
+      }
+    </style>
 
 </head>
 
-<body class="bg-gray-100 p-8 font-['Inter', sans-serif]">
-  <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
-    <h1 class="text-3xl font-extrabold mb-6 text-center text-blue-700">Gestión de Pacientes 😷</h1>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 font-['Inter',sans-serif] text-gray-800">
 
-	<!-- Botones superiores y Buscador -->
-	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-	    
-	    <!-- Grupo de Volver y Nuevo -->
-	    <div class="flex gap-3 w-full sm:w-auto order-2 sm:order-1">
-	        <!-- Botón Volver -->
-	        <a href="/dashboard"
-	           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2 transition duration-150 ease-in-out">
-	            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-	                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-	                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-	            </svg>
-	            Dashboard
-	        </a>
-	    
-	        <!-- Botón Nuevo Paciente -->
-	        <button onclick="resetModal()" 
-	                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
-	            Nuevo Paciente
-	        </button>
-	    </div>
+  <div class="max-w-6xl mx-auto mt-10 glass rounded-3xl shadow-2xl p-10 animate-fadeIn">
+    <h1 class="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-500 drop-shadow-sm">
+      Gestión de Pacientes 📅
+    </h1>
 
-        <!-- Buscador -->
-        <form th:action="@{/admin/pacientes}" method="get" class="flex gap-2 w-full sm:w-1/2 order-1 sm:order-2">
-            <input type="text" name="buscar" th:value="${buscar}" 
-                   placeholder="Buscar por Nombre, DNI o Teléfono..."
-                   class="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-shrink-0">
-                Buscar
-            </button>
-             <a th:href="@{/admin/pacientes}" th:if="${buscar != null and !buscar.isEmpty()}"
-                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex-shrink-0">
-                Limpiar
-            </a>
-        </form>
-	</div>
+    <!-- Controles superiores -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div class="flex gap-3">
+        <a href="/dashboard"
+           class="px-6 py-2.5 rounded-full bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow hover:scale-105 hover:shadow-md transition">
+          ⬅ Dashboard
+        </a>
+        <button onclick="resetModal()"
+                class="px-6 py-2.5 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white shadow hover:scale-105 hover:shadow-lg transition">
+          ➕ Nuevo Paciente
+        </button>
+      </div>
 
-    <!-- Mensaje si no hay pacientes -->
-    <div th:if="${pacientes.empty and (buscar == null or buscar.isEmpty())}" class="p-4 bg-yellow-100 text-yellow-700 rounded-lg text-center my-4">
-        No hay pacientes registrados en el sistema.
+      <form th:action="@{/admin/pacientes}" method="get" class="flex gap-2 w-full sm:w-1/2">
+        <input type="text" name="buscar" th:value="${buscar}" placeholder="🔍 Buscar por nombre, DNI o teléfono..."
+               class="flex-grow p-2.5 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 glow-input bg-white/60 backdrop-blur">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow hover:shadow-lg hover:scale-105 transition">
+          Buscar
+        </button>
+        <a th:href="@{/admin/pacientes}" th:if="${buscar != null and !buscar.isEmpty()}"
+           class="px-5 py-2.5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 shadow-sm transition">Limpiar</a>
+      </form>
     </div>
 
-    <!-- Mensaje si la búsqueda no arroja resultados -->
-    <div th:if="${pacientes.empty and buscar != null and !buscar.isEmpty()}" class="p-4 bg-red-100 text-red-700 rounded-lg text-center my-4">
-        No se encontraron pacientes para el término: <span class="font-bold" th:text="${buscar}"></span>.
+    <!-- Mensajes -->
+    <div th:if="${pacientes.empty and (buscar == null or buscar.isEmpty())}"
+         class="p-4 text-center bg-yellow-50 border border-yellow-300 rounded-xl shadow-sm mb-4">
+      No hay pacientes registrados en el sistema.
     </div>
-    
-    <!-- Tabla de pacientes -->
-    <div th:unless="${pacientes.empty}">
-        <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-          <thead class="bg-blue-600 text-white">
-            <tr>
-              <th class="p-3 text-left">ID</th>
-              <th class="p-3 text-left">Nombre</th>
-              <th class="p-3 text-left">Correo</th>
-              <th class="p-3 text-left">DNI</th>
-              <th class="p-3 text-left">Teléfono</th>
-              <th class="p-3 text-left">Fecha Nacimiento</th>
-              <th class="p-3 text-left">Historial Clínico</th>
-              <th class="p-3 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="paciente : ${pacientes}" class="border-b hover:bg-gray-100 transition duration-100">
-              <td class="p-3" th:text="${paciente.idPaciente}"></td>
-              <td class="p-3" th:text="${paciente.usuario.nombre + ' ' + paciente.usuario.apellido}"></td>
-              <td class="p-3" th:text="${paciente.usuario.correo}"></td>
-              <td class="p-3" th:text="${paciente.usuario.dni}"></td>
-              <td class="p-3" th:text="${paciente.usuario.telefono}"></td>
-              <td class="p-3" th:text="${paciente.fechaNacimiento}"></td>
-              <td class="p-3 truncate max-w-xs" th:text="${paciente.historialClinico}"></td>
-              <td class="p-3 text-center space-x-2">
-    			<button type="button"
-    			        class="text-blue-500 hover:text-blue-700 font-medium transition duration-150"
-    			        th:onclick="'editarPaciente(' + ${paciente.idPaciente} + ')'">
-    			  Editar
-    			</button>
-                <a th:href="@{/admin/pacientes/eliminar/{id}(id=${paciente.idPaciente})}" 
-                   class="text-red-500 hover:text-red-700 font-medium transition duration-150"
-                   onclick="return confirm('¿Seguro que deseas eliminar este paciente?')">Eliminar</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div th:if="${pacientes.empty and buscar != null and !buscar.isEmpty()}"
+         class="p-4 text-center bg-red-50 border border-red-300 rounded-xl shadow-sm mb-4">
+      No se encontraron pacientes para: <span class="font-bold" th:text="${buscar}"></span>.
+    </div>
+
+    <!-- Tabla -->
+    <div th:unless="${pacientes.empty}" class="overflow-hidden rounded-2xl shadow-lg border border-gray-200">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 text-white">
+          <tr>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">ID</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">Nombre</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">Correo</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">DNI</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">Teléfono</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">Nacimiento</th>
+            <th class="p-4 text-left font-semibold border-b border-blue-400/40">Historial</th>
+            <th class="p-4 text-center font-semibold border-b border-blue-400/40">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="paciente : ${pacientes}" 
+              class="hover:bg-blue-50 even:bg-white/70 odd:bg-white/90 transition-all">
+            <td class="p-4" th:text="${paciente.idPaciente}"></td>
+            <td class="p-4" th:text="${paciente.usuario.nombre + ' ' + paciente.usuario.apellido}"></td>
+            <td class="p-4" th:text="${paciente.usuario.correo}"></td>
+            <td class="p-4" th:text="${paciente.usuario.dni}"></td>
+            <td class="p-4" th:text="${paciente.usuario.telefono}"></td>
+            <td class="p-4" th:text="${paciente.fechaNacimiento}"></td>
+            <td class="p-4 truncate max-w-xs" th:text="${paciente.historialClinico}"></td>
+            <td class="p-4 text-center space-x-2">
+              <button type="button" th:onclick="'editarPaciente(' + ${paciente.idPaciente} + ')'"
+                      class="text-blue-600 hover:text-blue-800 font-semibold transition">Editar</button>
+              <a th:href="@{/admin/pacientes/eliminar/{id}(id=${paciente.idPaciente})}" 
+                 onclick="return confirm('¿Seguro que deseas eliminar este paciente?')"
+                 class="text-red-500 hover:text-red-700 font-semibold transition">Eliminar</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- MODAL NUEVO/EDITAR PACIENTE -->
-  <!-- MODAL NUEVO/EDITAR PACIENTE CORREGIDO -->
-  <div id="modalPaciente" 
-       class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 p-4 overflow-y-auto">
-    <div class="min-h-full flex items-center justify-center">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl my-8 overflow-hidden flex flex-col">
-        
-        <!-- Header fijo -->
-        <div class="flex-shrink-0 p-6 border-b border-gray-200 bg-white">
-          <h2 id="modalTitle" class="text-2xl font-bold text-center text-blue-600">Nuevo Paciente</h2>
+  <!-- MODAL -->
+  <div id="modalPaciente" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+    <div class="bg-white/95 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200">
+      <div class="p-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-center font-bold text-2xl">
+        <h2 id="modalTitle">Nuevo Paciente</h2>
+      </div>
+      <form th:action="@{/admin/pacientes/guardar}" method="post" class="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
+        <input type="hidden" id="idPaciente" name="idPaciente" value="">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold text-gray-700">Nombre:</label>
+            <input type="text" name="nombre" required class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
+          </div>
+          <div>
+            <label class="font-semibold text-gray-700">Apellido:</label>
+            <input type="text" name="apellido" required class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
+          </div>
         </div>
 
-        <!-- Formulario con scroll -->
-        <form th:action="@{/admin/pacientes/guardar}" method="post" class="flex flex-col h-full">
-          <!-- Contenido scrollable -->
-          <div class="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh]">
-            <!-- Campo oculto para el ID del paciente en edición -->
-            <input type="hidden" id="idPaciente" name="idPaciente" value="">
-            <input type="hidden" id="usuarioId" name="usuario.idUsuario" value="">
-
-            <!-- CAMPOS USUARIO -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Nombre:</label>
-                <input type="text" name="nombre" required
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Apellido:</label>
-                <input type="text" name="apellido" required
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">DNI:</label>
-                <input type="text" name="dni" required
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Correo:</label>
-                <input type="email" name="correo" required
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Teléfono:</label>
-                <input type="text" name="telefono"
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Dirección:</label>
-                <input type="text" name="direccion"
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-            </div>
-
-            <!-- Campo Contraseña (visible solo al crear) -->
-            <div id="password-field">
-              <label class="block font-semibold text-gray-700 mb-2">Contraseña:</label>
-              <input type="password" name="password" required
-                     class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-            </div>
-
-            <!-- CAMPOS PACIENTE -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
-              <div>
-                <label class="block font-semibold text-gray-700 mb-2">Fecha de Nacimiento:</label>
-                <input type="date" name="fechaNacimiento"
-                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150">
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block font-semibold text-gray-700 mb-2">Historial Clínico:</label>
-                <textarea name="historialClinico" rows="3"
-                          class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150"></textarea>
-              </div>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold text-gray-700">DNI:</label>
+            <input type="text" name="dni" required class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
           </div>
-
-          <!-- Footer fijo -->
-          <div class="flex-shrink-0 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-            <div class="flex justify-end gap-3">
-              <button type="button" onclick="cerrarModal('modalPaciente')"
-                      class="px-5 py-2.5 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition duration-150">
-                Cancelar
-              </button>
-              <button type="submit"
-                      class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-150">
-                Guardar
-              </button>
-            </div>
+          <div>
+            <label class="font-semibold text-gray-700">Correo:</label>
+            <input type="email" name="correo" required class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
           </div>
-        </form>
-      </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold text-gray-700">Teléfono:</label>
+            <input type="text" name="telefono" class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
+          </div>
+          <div>
+            <label class="font-semibold text-gray-700">Dirección:</label>
+            <input type="text" name="direccion" class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
+          </div>
+        </div>
+
+		<!-- Campo Contraseña (solo requerido para nuevo paciente) -->
+					<div id="password-field">
+					    <label class="block font-semibold text-gray-700 mb-2">
+					        Contraseña:
+					        <span class="text-red-500">*</span>
+					    </label>
+					    <input type="password" name="password" required
+					           class="w-full border border-gray-300 rounded-lg p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-150"
+					           placeholder="Solo para nuevo paciente">
+					</div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+          <div>
+            <label class="font-semibold text-gray-700">Fecha de Nacimiento:</label>
+            <input type="date" name="fechaNacimiento" class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="font-semibold text-gray-700">Historial Clínico:</label>
+            <textarea name="historialClinico" rows="3" class="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 glow-input"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <button type="button" onclick="cerrarModal('modalPaciente')"
+                  class="px-5 py-2.5 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition">Cancelar</button>
+          <button type="submit"
+                  class="px-5 py-2.5 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white rounded-xl shadow hover:scale-105 transition">
+            Guardar
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
 </html>
+

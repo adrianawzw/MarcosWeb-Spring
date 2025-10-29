@@ -2,20 +2,14 @@ package com.clinicadental.gestioncitas.controllers;
 
 import com.clinicadental.gestioncitas.entities.Paciente;
 import com.clinicadental.gestioncitas.entities.Usuario;
-import com.clinicadental.gestioncitas.repositories.PacienteRepository;
 import com.clinicadental.gestioncitas.services.PacienteService;
-import com.clinicadental.gestioncitas.services.UsuarioService;
-
-import jakarta.transaction.Transactional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin/pacientes")
@@ -51,9 +45,9 @@ public class PacienteController {
             @RequestParam String correo,
             @RequestParam String telefono,
             @RequestParam String direccion,
-            @RequestParam String password,
-            @RequestParam String fechaNacimiento,
-            @RequestParam String historialClinico) {
+            @RequestParam(required = false) String password, // ✅ Hacer opcional
+            @RequestParam(required = false) String fechaNacimiento,
+            @RequestParam(required = false) String historialClinico) {
         
         try {
             // Crear usuario con los datos del formulario
@@ -64,19 +58,26 @@ public class PacienteController {
             usuario.setCorreo(correo);
             usuario.setTelefono(telefono);
             usuario.setDireccion(direccion);
-            usuario.setPassword(password);
             usuario.setRol("PACIENTE");
+
+            // ✅ SOLUCIÓN: Solo establecer password si se proporciona (creación)
+            if (password != null && !password.trim().isEmpty()) {
+                usuario.setPassword(password);
+            } else if (idPaciente == null) {
+                // ❌ Si es creación y no hay password, error
+                throw new RuntimeException("La contraseña es obligatoria para nuevo paciente");
+            }
 
             // Crear paciente
             Paciente paciente = new Paciente();
-            paciente.setIdPaciente(idPaciente); // ✅ Será null para creación, tendrá valor para edición
+            paciente.setIdPaciente(idPaciente);
             
             pacienteService.guardarPaciente(paciente, usuario, fechaNacimiento, historialClinico);
             
             return "redirect:/admin/pacientes?success=true";
         } catch (Exception e) {
-            // ✅ Manejar el error sin caracteres especiales en la URL
-            return "redirect:/admin/pacientes?error=operation_failed";
+            e.printStackTrace(); // ✅ Para debug
+            return "redirect:/admin/pacientes?error=" + e.getMessage();
         }
     }
 

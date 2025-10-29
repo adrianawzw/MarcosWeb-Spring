@@ -26,6 +26,18 @@ public class UsuarioService {
         this.passwordEncoder = passwordEncoder;
     }
 
+ // ✅ NUEVO MÉTODO para actualizar usuario existente
+    @Transactional
+    public Usuario actualizarUsuario(Usuario usuario) {
+        // Si la contraseña está presente y no está encriptada, encriptarla
+        if (usuario.getPassword() != null && !usuario.getPassword().startsWith("$2a$")) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+        
+        return usuarioRepository.save(usuario);
+    }
+
+    
     @Transactional
     public Usuario registrarUsuario(Usuario usuario) {
         // 🔑 antes de guardar, encriptamos la contraseña
@@ -33,11 +45,12 @@ public class UsuarioService {
 
         Usuario nuevoUsuario = usuarioRepository.save(usuario);
 
+        /*
         if ("PACIENTE".equalsIgnoreCase(nuevoUsuario.getRol())) {
             Paciente paciente = new Paciente();
             paciente.setUsuario(nuevoUsuario);
             pacienteRepository.save(paciente);
-        }
+        }*/
 
         return nuevoUsuario;
     }
