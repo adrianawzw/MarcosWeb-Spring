@@ -194,10 +194,16 @@
                             <label class="form-label">Contraseña</label>
                             <input type="password" class="form-control" id="password" name="password">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Especialidad</label>
-                            <input type="text" class="form-control" id="especialidad" name="especialidad" required>
-                        </div>
+						<div class="col-md-6">
+						                            <label class="form-label">Especialidad</label>
+						                            <select class="form-select" id="especialidad" name="especialidad" required>
+						                                <option value="">Seleccione una especialidad</option>
+						                                <option value="estética dental">Estética Dental</option>
+						                                <option value="ortodoncia">Ortodoncia</option>
+						                                <option value="endodoncia">Endodoncia</option>
+						                                <option value="implantes dentales">Implantes Dentales</option>
+						                            </select>
+						                        </div>
                         <div class="col-md-6">
                             <label class="form-label">N° Colegiatura</label>
                             <input type="text" class="form-control" id="nroColegiatura" name="nroColegiatura">
@@ -247,7 +253,10 @@
             document.querySelector('#correo').value = odontologo.usuario?.correo || '';
             document.querySelector('#telefono').value = odontologo.usuario?.telefono || '';
             document.querySelector('#direccion').value = odontologo.usuario?.direccion || '';
-            document.querySelector('#especialidad').value = odontologo.especialidad || '';
+			// Establecer la especialidad en el select
+			            const especialidadSelect = document.querySelector('#especialidad');
+			            const especialidadValue = odontologo.especialidad || '';
+			            especialidadSelect.value = especialidadValue;
             document.querySelector('#nroColegiatura').value = odontologo.nroColegiatura || '';
             document.querySelector('#telefonoConsulta').value = odontologo.telefonoConsulta || '';
 

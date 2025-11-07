@@ -1,6 +1,7 @@
 package com.clinicadental.gestioncitas.services;
 
 import com.clinicadental.gestioncitas.entities.Odontologo;
+import com.clinicadental.gestioncitas.entities.Usuario;
 import com.clinicadental.gestioncitas.repositories.OdontologoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,5 +39,9 @@ public class OdontologoService {
     public List<Odontologo> buscarPorTermino(String termino) {
         String likeTermino = "%" + termino + "%";
         return odontologoRepository.buscarPorTermino(likeTermino);
+    }
+    
+    public Optional<Odontologo> findByUsuario(Usuario usuario) {
+        return odontologoRepository.findByUsuario(usuario);
     }
 }

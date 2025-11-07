@@ -1,146 +1,162 @@
 package com.clinicadental.gestioncitas.controllers;
 
+import com.clinicadental.gestioncitas.entities.Cita;
 import com.clinicadental.gestioncitas.entities.Odontologo;
 import com.clinicadental.gestioncitas.entities.Usuario;
+import com.clinicadental.gestioncitas.services.CitaService;
 import com.clinicadental.gestioncitas.services.OdontologoService;
 import com.clinicadental.gestioncitas.services.UsuarioService;
-
-import java.util.List; // Import necesario para List
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Controller
-@RequestMapping("/admin/odontologos")
+@RequestMapping("/odontologo")
 public class OdontologoController {
 
-    @Autowired
-    private OdontologoService odontologoService;
+    private final CitaService citaService;
+    private final OdontologoService odontologoService;
+    private final UsuarioService usuarioService;
 
     @Autowired
-    private UsuarioService usuarioService;
-
-    // --- MÉTODO LISTAR/BUSCAR ACTUALIZADO ---
-    @GetMapping
-    public String listar(@RequestParam(required = false) String buscar, Model model) {
-        List<Odontologo> odontologos;
-
-        if (buscar != null && !buscar.trim().isEmpty()) {
-            // Lógica de búsqueda: Llama a un nuevo método en el servicio.
-            // **IMPORTANTE**: Debes implementar 'buscarPorTermino' en OdontologoService.
-            odontologos = odontologoService.buscarPorTermino(buscar);
-        } else {
-            // Si no hay parámetro de búsqueda, lista todos.
-            odontologos = odontologoService.listar();
-        }
-
-        model.addAttribute("odontologos", odontologos);
-        // Agregamos el término de búsqueda al modelo para que se mantenga en el input del HTML
-        model.addAttribute("buscar", buscar); 
-        return "admin/odontologos";
-    }
-    // ----------------------------------------
-
-    @PostMapping("/guardar")
-    public String guardar(
-            @RequestParam String nombre,
-            @RequestParam String apellido,
-            @RequestParam String dni,
-            @RequestParam String correo,
-            @RequestParam String telefono,
-            @RequestParam String direccion,
-            @RequestParam String password,
-            @RequestParam String especialidad,
-            @RequestParam String nroColegiatura,
-            @RequestParam String telefonoConsulta
-    ) {
-        // ➕ MODO CREACIÓN (sin cambios)
-        Usuario usuario = new Usuario();
-        usuario.setNombre(nombre);
-        usuario.setApellido(apellido);
-        usuario.setDni(dni);
-        usuario.setCorreo(correo);
-        usuario.setTelefono(telefono);
-        usuario.setDireccion(direccion);
-        usuario.setPassword(password);
-        usuario.setRol("ODONTOLOGO");
-
-        Usuario nuevoUsuario = usuarioService.registrarUsuario(usuario);
-
-        Odontologo odontologo = new Odontologo();
-        odontologo.setUsuario(nuevoUsuario);
-        odontologo.setEspecialidad(especialidad);
-        odontologo.setNroColegiatura(nroColegiatura);
-        odontologo.setTelefonoConsulta(telefonoConsulta);
-
-        odontologoService.guardar(odontologo);
-
-        return "redirect:/admin/odontologos";
+    public OdontologoController(CitaService citaService, OdontologoService odontologoService, UsuarioService usuarioService) {
+        this.citaService = citaService;
+        this.odontologoService = odontologoService;
+        this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/editar")
-    public String editar(
-            @RequestParam Long idOdontologo,  // ✅ Ahora es requerido para edición
-            @RequestParam String nombre,
-            @RequestParam String apellido,
-            @RequestParam String dni,
-            @RequestParam String correo,
-            @RequestParam String telefono,
-            @RequestParam String direccion,
-            @RequestParam(required = false) String password,
-            @RequestParam String especialidad,
-            @RequestParam String nroColegiatura,
-            @RequestParam String telefonoConsulta
-    ) {
-        // 🔄 MODO EDICIÓN
-        Optional<Odontologo> optionalOdontologo = odontologoService.buscarPorId(idOdontologo);
-
-        if (optionalOdontologo.isPresent()) {
-            Odontologo odontologo = optionalOdontologo.get();
-            Usuario usuario = odontologo.getUsuario();
-
-            // Actualizar datos del usuario
-            usuario.setNombre(nombre);
-            usuario.setApellido(apellido);
-            usuario.setDni(dni);
-            usuario.setCorreo(correo);
-            usuario.setTelefono(telefono);
-            usuario.setDireccion(direccion);
-
-            if (password != null && !password.isBlank()) {
-                usuario.setPassword(password);
+    // --- MÉTODO AUXILIAR PARA OBTENER EL ODONTÓLOGO LOGUEADO ---
+    private Odontologo obtenerOdontologoLogueado() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                throw new RuntimeException("Usuario no autenticado");
             }
-
-            usuarioService.registrarUsuario(usuario);
-
-            odontologo.setEspecialidad(especialidad);
-            odontologo.setNroColegiatura(nroColegiatura);
-            odontologo.setTelefonoConsulta(telefonoConsulta);
-
-            odontologoService.guardar(odontologo);
+            
+            String username = auth.getName();
+            System.out.println("🔍 Usuario autenticado: " + username);
+            
+            Usuario usuario = usuarioService.findByCorreo(username);
+            System.out.println("🔍 Usuario encontrado: " + usuario.getNombre());
+            
+            return odontologoService.findByUsuario(usuario)
+                    .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado para el usuario: " + username));
+                    
+        } catch (Exception e) {
+            System.err.println("❌ Error en obtenerOdontologoLogueado: " + e.getMessage());
+            throw new RuntimeException("Error al obtener información del odontólogo: " + e.getMessage());
         }
-
-        return "redirect:/admin/odontologos";
     }
 
-    @GetMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Long id) {
-        odontologoService.eliminar(id);
-        return "redirect:/admin/odontologos";
+    // --- VER TODAS LAS CITAS DEL ODONTÓLOGO ---
+    @GetMapping("/mis-citas")
+    public String verMisCitas(Model model) {
+        try {
+            System.out.println("🚀 Accediendo a /odontologo/mis-citas");
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            List<Cita> citas = citaService.obtenerCitasPorOdontologo(odontologo);
+            
+            System.out.println("📊 Citas encontradas: " + citas.size());
+            
+            // Contar estadísticas con los NUEVOS ESTADOS
+            long citasHoy = citas.stream()
+                    .filter(c -> c.getFecha().equals(LocalDate.now()))
+                    .count();
+            long citasReservadas = citas.stream()
+                    .filter(c -> "RESERVADA".equals(c.getEstado()))
+                    .count();
+            long citasCompletadas = citas.stream()
+                    .filter(c -> "COMPLETADA".equals(c.getEstado()))
+                    .count();
+            
+            model.addAttribute("citas", citas);
+            model.addAttribute("odontologo", odontologo);
+            model.addAttribute("citasHoy", citasHoy);
+            model.addAttribute("citasReservadas", citasReservadas);
+            model.addAttribute("citasCompletadas", citasCompletadas);
+            
+            return "odontologo/mis-citas";
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en verMisCitas: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar las citas: " + e.getMessage());
+            return "error";
+        }
     }
-    
-    @GetMapping("/api/{id}")
-    @ResponseBody
-    public ResponseEntity<Odontologo> obtenerOdontologoPorId(@PathVariable Long id) {
-        Optional<Odontologo> odontologo = odontologoService.buscarPorId(id);
-        if (odontologo.isPresent()) {
-            return ResponseEntity.ok(odontologo.get());
-        } else {
-            return ResponseEntity.notFound().build();
+
+    // --- VER CITAS RESERVADAS ---
+    @GetMapping("/citas-reservadas")
+    public String verCitasReservadas(Model model) {
+        try {
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            List<Cita> citasReservadas = citaService.obtenerCitasPorEstadoYOdontologo(odontologo, "RESERVADA");
+            
+            model.addAttribute("citas", citasReservadas);
+            model.addAttribute("odontologo", odontologo);
+            model.addAttribute("titulo", "Citas Reservadas");
+            return "odontologo/mis-citas"; // Reutilizar la misma vista
+            
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar citas reservadas: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    // --- VER CITAS DE HOY ---
+    @GetMapping("/citas-hoy")
+    public String verCitasHoy(Model model) {
+        try {
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            List<Cita> citasHoy = citaService.obtenerCitasHoyPorOdontologo(odontologo);
+            
+            model.addAttribute("citas", citasHoy);
+            model.addAttribute("odontologo", odontologo);
+            model.addAttribute("titulo", "Citas de Hoy");
+            return "odontologo/mis-citas"; // Reutilizar la misma vista
+            
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar citas de hoy: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    // --- CONFIRMAR CITA (Cambiar de RESERVADA a CONFIRMADA) ---
+    @PostMapping("/cita/{id}/confirmar")
+    public String confirmarCita(@PathVariable Long id) {
+        try {
+            citaService.confirmarCita(id);
+            return "redirect:/odontologo/mis-citas?success=confirmada";
+        } catch (Exception e) {
+            return "redirect:/odontologo/mis-citas?error=confirmacion_fallida";
+        }
+    }
+
+    // --- COMPLETAR CITA ---
+    @PostMapping("/cita/{id}/completar")
+    public String completarCita(@PathVariable Long id) {
+        try {
+            citaService.completarCita(id);
+            return "redirect:/odontologo/mis-citas?success=completada";
+        } catch (Exception e) {
+            return "redirect:/odontologo/mis-citas?error=completacion_fallida";
+        }
+    }
+
+    // --- CANCELAR CITA ---
+    @PostMapping("/cita/{id}/cancelar")
+    public String cancelarCita(@PathVariable Long id, @RequestParam String motivo) {
+        try {
+            citaService.cancelarCitaOdontologo(id, motivo);
+            return "redirect:/odontologo/mis-citas?success=cancelada";
+        } catch (Exception e) {
+            return "redirect:/odontologo/mis-citas?error=cancelacion_fallida";
         }
     }
 }

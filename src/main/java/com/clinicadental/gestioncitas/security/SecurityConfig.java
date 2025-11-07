@@ -16,19 +16,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                // 🔹 Rutas públicas
+
                 .requestMatchers("/", "/auth/registro", "/auth/login", "/css/**", "/js/**", "/images/**").permitAll()
                 
-                // 🔹 Rutas para ADMIN
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 
-                // 🔹 Rutas para ODONTÓLOGO  
-                .requestMatchers("/odontologo/**").hasRole("ODONTOLOGO")
-                
-                // 🔹 Rutas para PACIENTE - NUEVAS RUTAS AGREGADAS
+                .requestMatchers("/odontologo/**").hasAnyRole("ODONTOLOGO", "ADMIN")
+                                
                 .requestMatchers("/paciente/**").hasRole("PACIENTE")
                 
-                // 🔹 Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

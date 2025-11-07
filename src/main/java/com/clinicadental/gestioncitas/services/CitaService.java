@@ -1,6 +1,7 @@
 package com.clinicadental.gestioncitas.services;
 
 import com.clinicadental.gestioncitas.entities.Cita;
+import com.clinicadental.gestioncitas.entities.Odontologo;
 import com.clinicadental.gestioncitas.entities.Paciente;
 import com.clinicadental.gestioncitas.repositories.CitaRepository;
 import com.clinicadental.gestioncitas.repositories.PacienteRepository;
@@ -24,23 +25,19 @@ public class CitaService {
         this.pacienteRepository = pacienteRepository;
     }
 
-    // 🔹 Obtener citas disponibles (optimizado)
     public List<Cita> obtenerCitasDisponibles() {
         return citaRepository.findCitasDisponiblesCompletas();
     }
 
-    // 🔹 Obtener citas disponibles por fecha
     public List<Cita> obtenerCitasDisponiblesPorFecha(LocalDate fecha) {
         return citaRepository.findByFechaAndPacienteIsNull(fecha);
     }
 
-    // 🔹 Verificar si paciente tiene menos de 3 citas
     public boolean puedeReservarMasCitas(Long idPaciente) {
         long count = citaRepository.countByPacienteId(idPaciente);
         return count < 3;
     }
 
-    // 🔹 Contar citas del paciente
     public int contarCitasPaciente(Long idPaciente) {
         return (int) citaRepository.countByPacienteId(idPaciente);
     }
@@ -158,5 +155,120 @@ public class CitaService {
                 )
                 .min(Comparator.comparing(Cita::getFecha)
                         .thenComparing(Cita::getHoraInicio));
+    }
+    
+
+    public List<Cita> obtenerCitasPendientesPorOdontologo(Odontologo odontologo) {
+        return citaRepository.findByOdontologoAndEstadoOrderByFechaAscHoraInicioAsc(odontologo, "PENDIENTE");
+    }
+
+
+    public void iniciarCita(Long id) {
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        cita.setEstado("EN_PROCESO");
+        citaRepository.save(cita);
+    }
+    
+ // En tu CitaService, agrega estos métodos:
+    public void confirmarCita(Long id) {
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        
+        // Solo se puede confirmar una cita RESERVADA
+        if (!"RESERVADA".equals(cita.getEstado())) {
+            throw new RuntimeException("Solo se pueden confirmar citas en estado RESERVADA");
+        }
+        
+        cita.setEstado("CONFIRMADA");
+        citaRepository.save(cita);
+    }
+
+    public void completarCita(Long id) {
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        
+        // Se puede completar una cita CONFIRMADA o RESERVADA
+        if (!"CONFIRMADA".equals(cita.getEstado()) && !"RESERVADA".equals(cita.getEstado())) {
+            throw new RuntimeException("Solo se pueden completar citas en estado CONFIRMADA o RESERVADA");
+        }
+        
+        cita.setEstado("COMPLETADA");
+        citaRepository.save(cita);
+    }
+
+    public void cancelarCitaOdontologo(Long id, String motivo) {
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        
+        // Se puede cancelar cualquier cita excepto las ya COMPLETADAS
+        if ("COMPLETADA".equals(cita.getEstado())) {
+            throw new RuntimeException("No se puede cancelar una cita ya COMPLETADA");
+        }
+        
+        cita.setEstado("CANCELADA");
+        cita.setObservaciones("Cancelada por odontólogo: " + motivo);
+        citaRepository.save(cita);
+    }
+    
+    public List<Cita> obtenerCitasPorOdontologo(Odontologo odontologo) {
+        try {
+            System.out.println("🔍 Buscando citas para odontólogo: " + odontologo.getUsuario().getNombre());
+            List<Cita> citas = citaRepository.findCitasCompletasPorOdontologo(odontologo);
+            System.out.println("✅ Citas encontradas: " + citas.size());
+            return citas;
+        } catch (Exception e) {
+            System.err.println("❌ Error en obtenerCitasPorOdontologo: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<Cita> obtenerCitasPorEstadoYOdontologo(Odontologo odontologo, String estado) {
+        try {
+            System.out.println("🔍 Buscando citas " + estado + " para odontólogo: " + odontologo.getUsuario().getNombre());
+            List<Cita> citas = citaRepository.findByOdontologoAndEstado(odontologo, estado);
+            System.out.println("✅ Citas " + estado + " encontradas: " + citas.size());
+            return citas;
+        } catch (Exception e) {
+            System.err.println("❌ Error en obtenerCitasPorEstadoYOdontologo: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<Cita> obtenerCitasHoyPorOdontologo(Odontologo odontologo) {
+        try {
+            System.out.println("🔍 Buscando citas de hoy para odontólogo: " + odontologo.getUsuario().getNombre());
+            List<Cita> citas = citaRepository.findCitasHoyPorOdontologo(odontologo);
+            System.out.println("✅ Citas de hoy encontradas: " + citas.size());
+            return citas;
+        } catch (Exception e) {
+            System.err.println("❌ Error en obtenerCitasHoyPorOdontologo: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<Cita> obtenerCitasReservadasPorOdontologo(Odontologo odontologo) {
+        try {
+            System.out.println("🔍 Buscando citas reservadas para odontólogo: " + odontologo.getUsuario().getNombre());
+            List<Cita> citas = citaRepository.findCitasReservadasPorOdontologo(odontologo);
+            System.out.println("✅ Citas reservadas encontradas: " + citas.size());
+            return citas;
+        } catch (Exception e) {
+            System.err.println("❌ Error en obtenerCitasReservadasPorOdontologo: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public long contarCitasPorEstado(Odontologo odontologo, String estado) {
+        return citaRepository.countByOdontologoAndEstado(odontologo, estado);
+    }
+
+    public List<Cita> obtenerProximasCitasPorOdontologo(Odontologo odontologo, int dias) {
+        LocalDate fechaFin = LocalDate.now().plusDays(dias);
+        return citaRepository.findProximasCitasPorOdontologo(odontologo, fechaFin);
+    }
+
+    public boolean tieneCitaEnHorario(Odontologo odontologo, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
+        return citaRepository.existsCitaActivaEnHorario(odontologo, fecha, horaInicio, horaFin);
     }
 }

@@ -1,6 +1,8 @@
 package com.clinicadental.gestioncitas.repositories;
 
 import com.clinicadental.gestioncitas.entities.Cita;
+import com.clinicadental.gestioncitas.entities.Odontologo;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,35 +16,30 @@ import java.util.Optional;
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
 
-    // 🔹 Buscar citas por fecha exacta
     List<Cita> findByFecha(LocalDate fecha);
 
-    // 🔹 Buscar citas disponibles (sin paciente asignado)
     List<Cita> findByPacienteIsNull();
 
-    // 🔹 Buscar citas por paciente específico
     List<Cita> findByPacienteIdPaciente(Long idPaciente);
 
-    // 🔹 Buscar citas disponibles por fecha específica
     List<Cita> findByFechaAndPacienteIsNull(LocalDate fecha);
 
-    // 🔹 Buscar citas por odontólogo
     List<Cita> findByOdontologoIdOdontologo(Long idOdontologo);
 
-    // 🔹 Buscar citas por consultorio
     List<Cita> findByConsultorioIdConsultorio(Long idConsultorio);
 
-    // 🔹 Buscar citas por servicio
     List<Cita> findByServicioIdServicio(Long idServicio);
 
-    // 🔹 Buscar citas por estado
     List<Cita> findByEstado(String estado);
 
-    // 🔹 Buscar citas por rango de fechas
     List<Cita> findByFechaBetween(LocalDate startDate, LocalDate endDate);
 
     // 🔹 Buscar citas por paciente y estado
     List<Cita> findByPacienteIdPacienteAndEstado(Long idPaciente, String estado);
+    
+    List<Cita> findByOdontologoOrderByFechaAscHoraInicioAsc(Odontologo odontologo);
+    List<Cita> findByOdontologoAndEstadoOrderByFechaAscHoraInicioAsc(Odontologo odontologo, String estado);
+    List<Cita> findByOdontologoAndFechaOrderByHoraInicioAsc(Odontologo odontologo, LocalDate fecha);
 
     // 🔹 Verificar si existe conflicto de horario para un odontólogo (para nuevas citas)
     @Query("SELECT COUNT(c) > 0 FROM Cita c WHERE " +
@@ -129,4 +126,72 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     // 🔹 Citas por mes y año
     @Query("SELECT COUNT(c) FROM Cita c WHERE FUNCTION('YEAR', c.fecha) = :year AND FUNCTION('MONTH', c.fecha) = :month")
     long countCitasByMonthAndYear(@Param("year") int year, @Param("month") int month);
+    
+ // 🔹 Buscar citas por odontólogo (para el panel del odontólogo)
+    List<Cita> findByOdontologo(Odontologo odontologo);
+
+    // 🔹 Buscar citas por odontólogo y estado específico
+    List<Cita> findByOdontologoAndEstado(Odontologo odontologo, String estado);
+
+    // 🔹 Buscar citas de hoy para un odontólogo específico
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.fecha = CURRENT_DATE ORDER BY c.horaInicio ASC")
+    List<Cita> findCitasHoyPorOdontologo(@Param("odontologo") Odontologo odontologo);
+
+    // 🔹 Buscar citas por odontólogo y fecha específica
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.fecha = :fecha ORDER BY c.horaInicio ASC")
+    List<Cita> findCitasPorOdontologoYFecha(
+            @Param("odontologo") Odontologo odontologo,
+            @Param("fecha") LocalDate fecha);
+
+    // 🔹 Buscar citas reservadas de un odontólogo (para confirmación)
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.estado = 'RESERVADA' ORDER BY c.fecha ASC, c.horaInicio ASC")
+    List<Cita> findCitasReservadasPorOdontologo(@Param("odontologo") Odontologo odontologo);
+
+    // 🔹 Buscar citas confirmadas de un odontólogo
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.estado = 'CONFIRMADA' ORDER BY c.fecha ASC, c.horaInicio ASC")
+    List<Cita> findCitasConfirmadasPorOdontologo(@Param("odontologo") Odontologo odontologo);
+
+    // 🔹 Contar citas por estado para un odontólogo específico
+    @Query("SELECT COUNT(c) FROM Cita c WHERE c.odontologo = :odontologo AND c.estado = :estado")
+    long countByOdontologoAndEstado(@Param("odontologo") Odontologo odontologo, @Param("estado") String estado);
+
+    // 🔹 Buscar próximas citas de un odontólogo (próximos 7 días)
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.fecha BETWEEN CURRENT_DATE AND :fechaFin ORDER BY c.fecha ASC, c.horaInicio ASC")
+    List<Cita> findProximasCitasPorOdontologo(
+            @Param("odontologo") Odontologo odontologo,
+            @Param("fechaFin") LocalDate fechaFin);
+
+    // 🔹 Verificar si un odontólogo tiene citas en un horario específico
+    @Query("SELECT COUNT(c) > 0 FROM Cita c WHERE " +
+           "c.odontologo = :odontologo AND " +
+           "c.fecha = :fecha AND " +
+           "c.estado IN ('RESERVADA', 'CONFIRMADA') AND " +
+           "((c.horaInicio < :horaFin AND c.horaFin > :horaInicio))")
+    boolean existsCitaActivaEnHorario(
+            @Param("odontologo") Odontologo odontologo,
+            @Param("fecha") LocalDate fecha,
+            @Param("horaInicio") LocalTime horaInicio,
+            @Param("horaFin") LocalTime horaFin);
+
+    // 🔹 Buscar citas completas con toda la información para un odontólogo
+    @Query("SELECT c FROM Cita c " +
+           "JOIN FETCH c.paciente p " +
+           "JOIN FETCH p.usuario " +
+           "JOIN FETCH c.consultorio " +
+           "JOIN FETCH c.servicio " +
+           "WHERE c.odontologo = :odontologo " +
+           "ORDER BY c.fecha ASC, c.horaInicio ASC")
+    List<Cita> findCitasCompletasPorOdontologo(@Param("odontologo") Odontologo odontologo);
+
+    // 🔹 Estadísticas mensuales para un odontólogo
+    @Query("SELECT c.estado, COUNT(c) FROM Cita c WHERE " +
+           "c.odontologo = :odontologo AND " +
+           "FUNCTION('YEAR', c.fecha) = :year AND " +
+           "FUNCTION('MONTH', c.fecha) = :month " +
+           "GROUP BY c.estado")
+    List<Object[]> findEstadisticasMensualesPorOdontologo(
+            @Param("odontologo") Odontologo odontologo,
+            @Param("year") int year,
+            @Param("month") int month);
+
 }

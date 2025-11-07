@@ -77,6 +77,9 @@ public class CitaController {
         // ✅ paciente se asigna después (cuando el paciente reserva)
         cita.setPaciente(null);
 
+        // ✅ Asegurar que siempre sea DISPONIBLE al crear
+        cita.setEstado("DISPONIBLE");
+
         citaRepository.save(cita);
         return "redirect:/admin/citas";
     }
@@ -95,6 +98,35 @@ public class CitaController {
         model.addAttribute("editar", true);
 
         return "admin/citas";
+    }
+
+    @PostMapping("/editar")
+    public String actualizarCita(@ModelAttribute Cita cita) {
+
+        // ✅ reconstruimos las relaciones desde sus IDs
+        if (cita.getOdontologo() != null && cita.getOdontologo().getIdOdontologo() != null) {
+            Odontologo o = odontologoRepository.findById(cita.getOdontologo().getIdOdontologo()).orElse(null);
+            cita.setOdontologo(o);
+        }
+
+        if (cita.getConsultorio() != null && cita.getConsultorio().getIdConsultorio() != null) {
+            Consultorio c = consultorioRepository.findById(cita.getConsultorio().getIdConsultorio()).orElse(null);
+            cita.setConsultorio(c);
+        }
+
+        if (cita.getServicio() != null && cita.getServicio().getIdServicio() != null) {
+            Servicio s = servicioRepository.findById(cita.getServicio().getIdServicio()).orElse(null);
+            cita.setServicio(s);
+        }
+
+        // ✅ Mantener el paciente actual si existe
+        Cita citaExistente = citaRepository.findById(cita.getIdCita()).orElse(null);
+        if (citaExistente != null) {
+            cita.setPaciente(citaExistente.getPaciente());
+        }
+
+        citaRepository.save(cita);
+        return "redirect:/admin/citas";
     }
 
     @GetMapping("/eliminar/{id}")

@@ -36,7 +36,7 @@
           </svg>
           Volver
         </a>
-        <button onclick="openModal()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-400 text-white rounded-xl shadow hover:scale-105 transition">
+        <button onclick="openModalNueva()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-400 text-white rounded-xl shadow hover:scale-105 transition">
           + Nueva Cita
         </button>
       </div>
@@ -97,15 +97,89 @@
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modalCita" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+  <!-- Modal para NUEVA CITA -->
+  <div id="modalNuevaCita" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
     <div class="bg-white rounded-2xl shadow-2xl w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto relative p-6 animate-fadeIn">
-      <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">✖</button>
+      <button onclick="closeModalNueva()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">✖</button>
 
-      <h2 class="text-2xl font-bold mb-5 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-500 text-center"
-          th:text="${editar} ? 'Editar Cita' : 'Nueva Cita'">Nueva Cita</h2>
+      <h2 class="text-2xl font-bold mb-5 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-500 text-center">
+        Nueva Cita
+      </h2>
 
-      <form th:action="@{/admin/citas/guardar}" th:object="${cita}" method="post" class="space-y-4">
+      <form th:action="@{/admin/citas/guardar}" method="post" class="space-y-4">
+        <!-- Campo estado FIJO como DISPONIBLE para nuevas citas -->
+        <input type="hidden" name="estado" value="DISPONIBLE">
+
+        <!-- Campos -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium">Odontólogo:</label>
+          <select name="odontologo.idOdontologo" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+            <option value="">Seleccionar Odontólogo</option>
+            <option th:each="o : ${odontologos}" th:value="${o.idOdontologo}" th:text="${o.usuario.nombre + ' ' + o.usuario.apellido}"></option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-medium">Consultorio:</label>
+          <select name="consultorio.idConsultorio" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+            <option value="">Seleccionar Consultorio</option>
+            <option th:each="c : ${consultorios}" th:value="${c.idConsultorio}" th:text="${c.nombre}"></option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-medium">Servicio:</label>
+          <select name="servicio.idServicio" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+            <option value="">Seleccionar Servicio</option>
+            <option th:each="s : ${servicios}" th:value="${s.idServicio}" th:text="${s.nombre}"></option>
+          </select>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex-1">
+            <label class="block text-gray-700 text-sm font-medium">Fecha:</label>
+            <input type="date" name="fecha" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+          </div>
+          <div class="flex-1">
+            <label class="block text-gray-700 text-sm font-medium">Hora Inicio:</label>
+            <input type="time" name="horaInicio" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+          </div>
+          <div class="flex-1">
+            <label class="block text-gray-700 text-sm font-medium">Hora Fin:</label>
+            <input type="time" name="horaFin" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" required>
+          </div>
+        </div>
+
+        <!-- Campo estado FIJO visible (solo lectura) -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium">Estado:</label>
+          <input type="text" value="DISPONIBLE" class="border p-2 w-full rounded-md bg-gray-100 text-gray-600" readonly>
+          <p class="text-xs text-gray-500 mt-1">Las nuevas citas siempre se crean como DISPONIBLE</p>
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-medium">Observaciones:</label>
+          <textarea name="observaciones" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300" rows="3"></textarea>
+        </div>
+
+        <div class="flex justify-end mt-5">
+          <button type="button" onclick="closeModalNueva()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition mr-2">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para EDITAR CITA -->
+  <div id="modalEditarCita" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto relative p-6 animate-fadeIn">
+      <button onclick="closeModalEditar()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">✖</button>
+
+      <h2 class="text-2xl font-bold mb-5 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-500 text-center">
+        Editar Cita
+      </h2>
+
+      <form th:action="@{/admin/citas/editar}" th:object="${cita}" method="post" class="space-y-4">
         <input type="hidden" th:field="*{idCita}" />
 
         <!-- Campos -->
@@ -151,12 +225,15 @@
           </div>
         </div>
 
+        <!-- Selector de estado SOLO para edición -->
         <div>
           <label class="block text-gray-700 text-sm font-medium">Estado:</label>
           <select th:field="*{estado}" class="border p-2 w-full rounded-md focus:ring-2 focus:ring-blue-300">
-            <option value="pendiente">Pendiente</option>
-            <option value="confirmada">Confirmada</option>
-            <option value="cancelada">Cancelada</option>
+            <option value="DISPONIBLE">DISPONIBLE</option>
+            <option value="RESERVADA">RESERVADA</option>
+            <option value="CONFIRMADA">CONFIRMADA</option>
+            <option value="COMPLETADA">COMPLETADA</option>
+            <option value="CANCELADA">CANCELADA</option>
           </select>
         </div>
 
@@ -166,33 +243,49 @@
         </div>
 
         <div class="flex justify-end mt-5">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition mr-2">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                  th:text="${editar} ? 'Actualizar' : 'Guardar'">Guardar</button>
+          <button type="button" onclick="closeModalEditar()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition mr-2">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Actualizar</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    function openModal() {
-      document.getElementById("modalCita").classList.remove("hidden");
-      document.body.classList.add("overflow-hidden");
-    }
-    function closeModal() {
-      document.getElementById("modalCita").classList.add("hidden");
-      document.body.classList.remove("overflow-hidden");
-    }
-    function editCita(idCita) {
-      window.location.href = `/admin/citas/editar/${idCita}`;
-    }
-  </script>
+      // Funciones para nueva cita
+      function openModalNueva() {
+        document.getElementById("modalNuevaCita").classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+      
+      function closeModalNueva() {
+        document.getElementById("modalNuevaCita").classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
 
-  <script th:inline="javascript">
-  /*<![CDATA[*/
-  let isEditMode = /*[[${editar}]]*/ false;
-  if (isEditMode) { openModal(); }
-  /*]]>*/
+      // Funciones para editar cita
+      function openModalEditar() {
+        document.getElementById("modalEditarCita").classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+      }
+      
+      function closeModalEditar() {
+        document.getElementById("modalEditarCita").classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      function editCita(idCita) {
+        window.location.href = `/admin/citas/editar/${idCita}`;
+      }
+
+      // Abrir modal de edición automáticamente si estamos en modo edición
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEditPage = window.location.pathname.includes('/editar/');
+        
+        if (isEditPage) {
+          openModalEditar();
+        }
+      });
   </script>
 
 </body>
