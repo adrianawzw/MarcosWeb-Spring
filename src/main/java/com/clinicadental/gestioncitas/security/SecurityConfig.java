@@ -12,15 +12,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
+	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-
-                .requestMatchers("/", "/auth/registro", "/auth/login", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/auth/registro", "/auth/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                 
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 
+                // Agregar los nuevos endpoints del odontólogo
                 .requestMatchers("/odontologo/**").hasAnyRole("ODONTOLOGO", "ADMIN")
                                 
                 .requestMatchers("/paciente/**").hasRole("PACIENTE")
@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/auth/login")
                 .usernameParameter("correo")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/dashboard", true) // 🔹 Cambiado a /dashboard
+                .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
@@ -42,6 +42,9 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .accessDeniedPage("/error403")
             );
 
         return http.build();

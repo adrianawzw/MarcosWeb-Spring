@@ -91,6 +91,96 @@ public class OdontologoController {
         }
     }
 
+    // --- NUEVO: VER CITAS PENDIENTES (RESERVADAS + CONFIRMADAS) ---
+    @GetMapping("/citas-pendientes")
+    public String verCitasPendientes(Model model) {
+        try {
+            System.out.println("🚀 Accediendo a /odontologo/citas-pendientes");
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            
+            // Obtener citas reservadas y confirmadas
+            List<Cita> citasReservadas = citaService.obtenerCitasPorEstadoYOdontologo(odontologo, "RESERVADA");
+            List<Cita> citasConfirmadas = citaService.obtenerCitasPorEstadoYOdontologo(odontologo, "CONFIRMADA");
+            
+            // Combinar ambas listas
+            List<Cita> citasPendientes = citasReservadas;
+            citasPendientes.addAll(citasConfirmadas);
+            
+            // Estadísticas
+            long totalReservadas = citasReservadas.size();
+            long totalConfirmadas = citasConfirmadas.size();
+            long citasProximaSemana = citasPendientes.stream()
+                    .filter(c -> c.getFecha().isBefore(LocalDate.now().plusDays(7)))
+                    .count();
+            
+            model.addAttribute("citasPendientes", citasPendientes);
+            model.addAttribute("totalReservadas", totalReservadas);
+            model.addAttribute("totalConfirmadas", totalConfirmadas);
+            model.addAttribute("citasProximaSemana", citasProximaSemana);
+            
+            return "odontologo/citas-pendientes";
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en verCitasPendientes: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar citas pendientes: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    // --- NUEVO: VER CITAS DE HOY (VISTA ESPECÍFICA) ---
+    @GetMapping("/citas-hoy")
+    public String verCitasHoy(Model model) {
+        try {
+            System.out.println("🚀 Accediendo a /odontologo/citas-hoy");
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            List<Cita> citasHoy = citaService.obtenerCitasHoyPorOdontologo(odontologo);
+            
+            // Estadísticas para hoy
+            long totalCitasHoy = citasHoy.size();
+            long citasConfirmadasHoy = citasHoy.stream()
+                    .filter(c -> "CONFIRMADA".equals(c.getEstado()))
+                    .count();
+            long citasReservadasHoy = citasHoy.stream()
+                    .filter(c -> "RESERVADA".equals(c.getEstado()))
+                    .count();
+            
+            model.addAttribute("citasHoy", citasHoy);
+            model.addAttribute("fechaHoy", LocalDate.now());
+            model.addAttribute("totalCitasHoy", totalCitasHoy);
+            model.addAttribute("citasConfirmadasHoy", citasConfirmadasHoy);
+            model.addAttribute("citasReservadasHoy", citasReservadasHoy);
+            
+            return "odontologo/citas-hoy";
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en verCitasHoy: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar citas de hoy: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    // --- NUEVO: VER CITAS CONFIRMADAS ---
+    @GetMapping("/citas-confirmadas")
+    public String verCitasConfirmadas(Model model) {
+        try {
+            System.out.println("🚀 Accediendo a /odontologo/citas-confirmadas");
+            Odontologo odontologo = obtenerOdontologoLogueado();
+            List<Cita> citasConfirmadas = citaService.obtenerCitasPorEstadoYOdontologo(odontologo, "CONFIRMADA");
+            
+            model.addAttribute("citasConfirmadas", citasConfirmadas);
+            
+            return "odontologo/citas-confirmadas";
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en verCitasConfirmadas: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar citas confirmadas: " + e.getMessage());
+            return "error";
+        }
+    }
+
     // --- VER CITAS RESERVADAS ---
     @GetMapping("/citas-reservadas")
     public String verCitasReservadas(Model model) {
@@ -105,24 +195,6 @@ public class OdontologoController {
             
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar citas reservadas: " + e.getMessage());
-            return "error";
-        }
-    }
-
-    // --- VER CITAS DE HOY ---
-    @GetMapping("/citas-hoy")
-    public String verCitasHoy(Model model) {
-        try {
-            Odontologo odontologo = obtenerOdontologoLogueado();
-            List<Cita> citasHoy = citaService.obtenerCitasHoyPorOdontologo(odontologo);
-            
-            model.addAttribute("citas", citasHoy);
-            model.addAttribute("odontologo", odontologo);
-            model.addAttribute("titulo", "Citas de Hoy");
-            return "odontologo/mis-citas"; // Reutilizar la misma vista
-            
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar citas de hoy: " + e.getMessage());
             return "error";
         }
     }

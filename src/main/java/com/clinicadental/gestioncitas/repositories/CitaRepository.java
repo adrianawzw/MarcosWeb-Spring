@@ -152,8 +152,8 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> findCitasConfirmadasPorOdontologo(@Param("odontologo") Odontologo odontologo);
 
     // 🔹 Contar citas por estado para un odontólogo específico
-    @Query("SELECT COUNT(c) FROM Cita c WHERE c.odontologo = :odontologo AND c.estado = :estado")
-    long countByOdontologoAndEstado(@Param("odontologo") Odontologo odontologo, @Param("estado") String estado);
+    //@Query("SELECT COUNT(c) FROM Cita c WHERE c.odontologo = :odontologo AND c.estado = :estado")
+    //long countByOdontologoAndEstado(@Param("odontologo") Odontologo odontologo, @Param("estado") String estado);
 
     // 🔹 Buscar próximas citas de un odontólogo (próximos 7 días)
     @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.fecha BETWEEN CURRENT_DATE AND :fechaFin ORDER BY c.fecha ASC, c.horaInicio ASC")
@@ -193,5 +193,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
             @Param("odontologo") Odontologo odontologo,
             @Param("year") int year,
             @Param("month") int month);
+    
+    Long countByOdontologoAndFecha(Odontologo odontologo, LocalDate fecha);
+    Long countByOdontologoAndEstadoIn(Odontologo odontologo, List<String> estados);
+    Long countByOdontologoAndEstado(Odontologo odontologo, String estado);
 
 }

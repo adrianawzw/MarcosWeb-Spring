@@ -271,4 +271,16 @@ public class CitaService {
     public boolean tieneCitaEnHorario(Odontologo odontologo, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
         return citaRepository.existsCitaActivaEnHorario(odontologo, fecha, horaInicio, horaFin);
     }
+    
+    public Long contarCitasHoyPorOdontologo(Odontologo odontologo) {
+        return citaRepository.countByOdontologoAndFecha(odontologo, LocalDate.now());
+    }
+
+    public Long contarCitasPendientesPorOdontologo(Odontologo odontologo) {
+        return citaRepository.countByOdontologoAndEstadoIn(odontologo, List.of("RESERVADA", "CONFIRMADA"));
+    }
+
+    public Long contarCitasPorEstadoYOdontologo(Odontologo odontologo, String estado) {
+        return citaRepository.countByOdontologoAndEstado(odontologo, estado);
+    }
 }
